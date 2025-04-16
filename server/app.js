@@ -2,6 +2,7 @@ import { open, readdir, readFile } from "fs/promises";
 import http from "http";
 import mime from "mime-types";
 const server = http.createServer(async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.url === "/favicon.ico") return res.end("No favicon");
   if (req.url === "/") {
     serveDirectory(req, res);
@@ -10,7 +11,7 @@ const server = http.createServer(async (req, res) => {
       const [url, queryString] = req.url.split("?");
       console.log({ url, queryString }, "hello");
       const queryParams = {};
-      queryString.split("&").forEach((pair) => {
+      queryString?.split("&").forEach((pair) => {
         const [key, value] = pair.split("=");
         queryParams[key] = value;
       });
@@ -39,22 +40,12 @@ const server = http.createServer(async (req, res) => {
 });
 
 async function serveDirectory(req, res) {
-  const [url, queryString] = req.url.split("?");
+  const [url] = req.url.split("?");
 
-  const files = await readdir(`./storage${decodeURIComponent(url)}`);
-  const listItem = files
-    .map(
-      (file) =>
-        `${file} <a href=".${
-          req.url === "/" ? "" : req.url
-        }/${file}?action=open">Open</a> <a href=".${
-          req.url === "/" ? "" : req.url
-        }/${file}?action=download">Download</a><br />`
-    )
-    .join("");
-  const htmlBoilerPlate = await readFile("./index.html", "utf-8");
-  res.end(htmlBoilerPlate.replace("${listItem}", listItem));
+  const files = await readdir(`./storage/${decodeURIComponent(url)}`);
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify(files));
 }
-server.listen(4000, "0.0.0.0", () => {
+server.listen(80, "0.0.0.0", () => {
   console.log("server started");
 });
