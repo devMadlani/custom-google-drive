@@ -1,5 +1,5 @@
 import { createWriteStream } from "fs";
-import { open, readdir, readFile, rm } from "fs/promises";
+import { open, readdir, readFile, rename, rm } from "fs/promises";
 import http from "http";
 import mime from "mime-types";
 const server = http.createServer(async (req, res) => {
@@ -51,10 +51,19 @@ const server = http.createServer(async (req, res) => {
     });
   } else if (req.method === "DELETE") {
     req.on("data", async (chunk) => {
-      const filename = chunk.toString();
-      console.log(filename);
-      await rm(`./storage/${filename}`);
-      res.end("File Deleted Successfully");
+      try {
+        const filename = chunk.toString();
+        await rm(`./storage/${filename}`);
+        res.end("File Deleted Successfully");
+      } catch (error) {
+        res.end(error.message);
+      }
+    });
+  } else if (req.method === "PATCH") {
+    req.on("data", async (chunk) => {
+      const { oldfilename, newFileName } = JSON.parse(chunk.toString());
+      await rename(`./storage/${oldfilename}`, `./storage/${newFileName}`);
+      res.end("File Renamed Successfully");
     });
   }
 });

@@ -4,6 +4,7 @@ const serverUrl = "http://192.168.245.182";
 function App() {
   const [directories, setDirectories] = useState([]);
   const [progress, setProgress] = useState(0);
+  const [newFileName, setNewFileName] = useState("");
   const fetchDirectories = async () => {
     const response = await fetch(serverUrl);
     const data = await response.json();
@@ -12,13 +13,14 @@ function App() {
   useEffect(() => {
     fetchDirectories();
   }, []);
-  const handleChange = async (e) => {
+  const uploadFile = async (e) => {
     const file = e.target.files[0];
     const xhr = new XMLHttpRequest();
     xhr.open("POST", serverUrl, true);
     xhr.setRequestHeader("filename", file.name);
     xhr.addEventListener("load", () => {
       console.log(xhr.response);
+      fetchDirectories();
     });
     xhr.upload.addEventListener("progress", (e) => {
       const totalProgress = (e.loaded / e.total) * 100;
@@ -33,16 +35,38 @@ function App() {
     });
     const data = await response.text();
     console.log(data);
+    fetchDirectories();
+  };
+  const renameFile = async (oldfilename) => {
+    setNewFileName(oldfilename);
+  };
+  const saveFileName = async (oldfilename) => {
+    console.log(oldfilename, newFileName);
+    const response = await fetch(`${serverUrl}`, {
+      method: "PATCH",
+      body: JSON.stringify({ oldfilename, newFileName }),
+    });
+    const data = await response.text();
+    console.log(data);
+    fetchDirectories();
   };
   return (
     <>
-      <input type="file" onChange={handleChange} />
+      <input type="file" onChange={uploadFile} />
+      <input
+        type="text"
+        value={newFileName}
+        onChange={(e) => {
+          setNewFileName(e.target.value);
+        }}
+      />
       <p>{progress}%</p>
       {directories.map((directory, index) => (
         <div key={index}>
           {directory} <a href={`${serverUrl}/${directory}?action=open`}>Open</a>{" "}
           <a href={`${serverUrl}/${directory}?action=download`}>Download</a>
-          <button>Rename</button>
+          <button onClick={() => renameFile(directory)}>Rename</button>
+          <button onClick={() => saveFileName(directory)}>save</button>
           <button
             onClick={() => {
               handleDelete(directory);
