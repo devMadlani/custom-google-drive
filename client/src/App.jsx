@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-const serverUrl = "http://192.168.245.182";
+const serverUrl = "http://[2409:40c1:103b:8bfa:70a3:d2a1:ab13:9caa]";
 function App() {
   const [directories, setDirectories] = useState([]);
   const [progress, setProgress] = useState(0);

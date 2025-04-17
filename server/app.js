@@ -75,6 +75,6 @@ async function serveDirectory(req, res) {
   res.setHeader("Content-Type", "application/json");
   res.end(JSON.stringify(files));
 }
-server.listen(80, "0.0.0.0", () => {
+server.listen(80, "::0", () => {
   console.log("server started");
 });
