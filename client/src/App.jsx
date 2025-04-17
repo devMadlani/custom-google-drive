@@ -3,6 +3,7 @@ import "./App.css";
 const serverUrl = "http://192.168.245.182";
 function App() {
   const [directories, setDirectories] = useState([]);
+  const [progress, setProgress] = useState(0);
   const fetchDirectories = async () => {
     const response = await fetch(serverUrl);
     const data = await response.json();
@@ -19,12 +20,16 @@ function App() {
     xhr.addEventListener("load", () => {
       console.log(xhr.response);
     });
-
+    xhr.upload.addEventListener("progress", (e) => {
+      const totalProgress = (e.loaded / e.total) * 100;
+      setProgress(Math.floor(totalProgress));
+    });
     xhr.send(file);
   };
   return (
     <>
       <input type="file" onChange={handleChange} />
+      <p>{progress}%</p>
       {directories.map((directory, index) => (
         <div key={index}>
           {directory} <a href={`${serverUrl}/${directory}?action=open`}>Open</a>{" "}
