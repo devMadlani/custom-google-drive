@@ -26,6 +26,14 @@ function App() {
     });
     xhr.send(file);
   };
+  const handleDelete = async (filename) => {
+    const response = await fetch(`${serverUrl}`, {
+      method: "DELETE",
+      body: filename,
+    });
+    const data = await response.text();
+    console.log(data);
+  };
   return (
     <>
       <input type="file" onChange={handleChange} />
@@ -34,6 +42,14 @@ function App() {
         <div key={index}>
           {directory} <a href={`${serverUrl}/${directory}?action=open`}>Open</a>{" "}
           <a href={`${serverUrl}/${directory}?action=download`}>Download</a>
+          <button>Rename</button>
+          <button
+            onClick={() => {
+              handleDelete(directory);
+            }}
+          >
+            Delete
+          </button>
         </div>
       ))}
     </>
