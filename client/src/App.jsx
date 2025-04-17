@@ -11,8 +11,20 @@ function App() {
   useEffect(() => {
     fetchDirectories();
   }, []);
+  const handleChange = async (e) => {
+    const file = e.target.files[0];
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", serverUrl, true);
+    xhr.setRequestHeader("filename", file.name);
+    xhr.addEventListener("load", () => {
+      console.log(xhr.response);
+    });
+
+    xhr.send(file);
+  };
   return (
     <>
+      <input type="file" onChange={handleChange} />
       {directories.map((directory, index) => (
         <div key={index}>
           {directory} <a href={`${serverUrl}/${directory}?action=open`}>Open</a>{" "}
