@@ -1,4 +1,5 @@
 import express from "express";
+import { createWriteStream } from "fs";
 import { readdir, rename, rm } from "fs/promises";
 const app = express();
 app.use((req, res, next) => {
@@ -18,6 +19,16 @@ app.use(express.json());
 //   express.static("./storage")(req, res, next);
 // });
 
+app.post("/:filename", (req, res) => {
+  const { filename } = req.params;
+  const writeableStrem = createWriteStream(`./storage/${filename}`);
+  req.pipe(writeableStrem);
+  req.on("end", () => {
+    res.json({ message: "File Uploaded Successfully" });
+  });
+});
+
+//READ
 app.get("/:filename", (req, res) => {
   const { filename } = req.params;
   if (req.query.action === "download") {
@@ -25,6 +36,14 @@ app.get("/:filename", (req, res) => {
   }
   res.sendFile(`${import.meta.dirname}/storage/${filename}`);
 });
+
+//serving directory content
+app.get("/", async (req, res) => {
+  const fileList = await readdir("./storage");
+  res.json(fileList);
+});
+
+//DELETE
 app.delete("/:filename", async (req, res) => {
   const { filename } = req.params;
   try {
@@ -35,16 +54,11 @@ app.delete("/:filename", async (req, res) => {
   }
 });
 
+//UPDATE
 app.patch("/:filename", async (req, res) => {
   const { filename } = req.params;
   await rename(`./storage/${filename}`, `./storage/${req.body.newFileName}`);
   res.json({ message: "File Renamed Successfully" });
-});
-
-//serving directory content
-app.get("/", async (req, res) => {
-  const fileList = await readdir("./storage");
-  res.json(fileList);
 });
 
 app.listen(4000, () => {
