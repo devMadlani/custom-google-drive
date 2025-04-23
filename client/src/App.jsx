@@ -29,9 +29,8 @@ function App() {
     xhr.send(file);
   };
   const handleDelete = async (filename) => {
-    const response = await fetch(`${serverUrl}`, {
+    const response = await fetch(`${serverUrl}/${filename}`, {
       method: "DELETE",
-      body: filename,
     });
     const data = await response.text();
     console.log(data);
@@ -42,9 +41,12 @@ function App() {
   };
   const saveFileName = async (oldfilename) => {
     console.log(oldfilename, newFileName);
-    const response = await fetch(`${serverUrl}`, {
+    const response = await fetch(`${serverUrl}/${oldfilename}`, {
       method: "PATCH",
-      body: JSON.stringify({ oldfilename, newFileName }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ newFileName }),
     });
     const data = await response.text();
     console.log(data);
