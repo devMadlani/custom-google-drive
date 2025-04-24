@@ -1,16 +1,12 @@
 import express from "express";
 import { createWriteStream } from "fs";
-import { readdir, rename, rm } from "fs/promises";
+import { readdir, rename, rm, stat } from "fs/promises";
+import cors from "cors";
 const app = express();
-app.use((req, res, next) => {
-  res.set({
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "*",
-    "Access-Control-Allow-Headers": "*",
-  });
-  next();
-});
+
 app.use(express.json());
+app.use(cors());
+
 //serving static files
 // app.use((req, res, next) => {
 //   if (req.query.action === "download") {
@@ -19,7 +15,8 @@ app.use(express.json());
 //   express.static("./storage")(req, res, next);
 // });
 
-app.post("/:filename", (req, res) => {
+//CREATE
+app.post("/files/:filename", (req, res) => {
   const { filename } = req.params;
   const writeableStrem = createWriteStream(`./storage/${filename}`);
   req.pipe(writeableStrem);
@@ -29,22 +26,42 @@ app.post("/:filename", (req, res) => {
 });
 
 //READ
-app.get("/:filename", (req, res) => {
+app.get("/files/:filename", (req, res) => {
   const { filename } = req.params;
   if (req.query.action === "download") {
-    res.set("Content-Disposition", "attchment");
+    res.set("Content-Disposition", "attachment");
   }
   res.sendFile(`${import.meta.dirname}/storage/${filename}`);
 });
 
 //serving directory content
-app.get("/", async (req, res) => {
+
+//Optional Dynamic Route
+
+app.get("/directory", async (req, res) => {
+  const { dirname } = req.params;
   const fileList = await readdir("./storage");
-  res.json(fileList);
+  const resData = [];
+  for (const item of fileList) {
+    const stats = await stat(`./storage/${item}`);
+    resData.push({ name: item, isDirectory: stats.isDirectory() });
+  }
+  res.json(resData);
+});
+
+app.get("/directory/:dirname", async (req, res) => {
+  const { dirname } = req.params;
+  const fileList = await readdir(`./storage/${dirname}`);
+  const resData = [];
+  for (const item of fileList) {
+    const stats = await stat(`./storage/${dirname}/${item}`);
+    resData.push({ name: item, isDirectory: stats.isDirectory() });
+  }
+  res.json(resData);
 });
 
 //DELETE
-app.delete("/:filename", async (req, res) => {
+app.delete("/files/:filename", async (req, res) => {
   const { filename } = req.params;
   try {
     await rm(`${import.meta.dirname}/storage/${filename}`);
@@ -55,7 +72,7 @@ app.delete("/:filename", async (req, res) => {
 });
 
 //UPDATE
-app.patch("/:filename", async (req, res) => {
+app.patch("/files/:filename", async (req, res) => {
   const { filename } = req.params;
   await rename(`./storage/${filename}`, `./storage/${req.body.newFileName}`);
   res.json({ message: "File Renamed Successfully" });
