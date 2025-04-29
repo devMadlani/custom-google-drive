@@ -2,6 +2,7 @@ import express from "express";
 import { createWriteStream } from "fs";
 import { mkdir, readdir, rename, rm, stat } from "fs/promises";
 import cors from "cors";
+import path from "path";
 const app = express();
 
 app.use(express.json());
@@ -17,19 +18,23 @@ app.use(cors());
 
 //Optional Dynamic Route
 app.get("/directory/?*", async (req, res) => {
-  const { 0: dirname } = req.params;
-  const fileList = await readdir(`./storage/${dirname || ""}`);
-  const resData = [];
-  for (const item of fileList) {
-    const stats = await stat(`./storage/${dirname || ""}/${item}`);
-    resData.push({ name: item, isDirectory: stats.isDirectory() });
+  const dirname = path.join("/", req.params[0]);
+
+  try {
+    const fileList = await readdir(`./storage/${dirname || ""}`);
+    const resData = [];
+    for (const item of fileList) {
+      const stats = await stat(`./storage/${dirname || ""}/${item}`);
+      resData.push({ name: item, isDirectory: stats.isDirectory() });
+    }
+    res.json(resData);
+  } catch (error) {
+    res.json({ message: error.message });
   }
-  res.json(resData);
 });
 
 //CREATE
 app.post("/directory/*", async (req, res) => {
-  const { 0: dirname } = req.params;
   try {
     await mkdir(`${import.meta.dirname}/storage/${dirname || ""}`);
     res.json({ message: "Directory Created Successfully" });
@@ -40,7 +45,8 @@ app.post("/directory/*", async (req, res) => {
 
 //CREATE
 app.post("/files/*", (req, res) => {
-  const { 0: filePath } = req.params;
+  const filePath = path.join("/", req.params[0]);
+
   const writeableStrem = createWriteStream(`./storage/${filePath}`);
   req.pipe(writeableStrem);
   req.on("end", () => {
@@ -51,17 +57,19 @@ app.post("/files/*", (req, res) => {
 //READ
 // wild card routing
 app.get("/files/*", (req, res) => {
-  const filePath = req.params[0];
+  const filePath = path.join("/", req.params[0]);
   if (req.query.action === "download") {
     res.set("Content-Disposition", "attachment");
   }
-  res.sendFile(`${import.meta.dirname}/storage/${filePath}`);
+  res.sendFile(`${import.meta.dirname}/storage/${filePath}`, (err) => {
+    res.json({ message: err.message });
+  });
 });
 
 //DELETE
 
 app.delete("/files/*", async (req, res) => {
-  const { 0: filePath } = req.params;
+  const filePath = path.join("/", req.params[0]);
   try {
     await rm(`${import.meta.dirname}/storage/${filePath}`, { recursive: true });
     res.json({ message: "File Deleted Successfully" });
@@ -72,7 +80,7 @@ app.delete("/files/*", async (req, res) => {
 
 //UPDATE
 app.patch("/files/*", async (req, res) => {
-  const { 0: filePath } = req.params;
+  const filePath = req.params[0];
   await rename(`./storage/${filePath}`, `./storage/${req.body.newFileName}`);
   res.json({ message: "File Renamed Successfully" });
 });
