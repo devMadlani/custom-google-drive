@@ -35,6 +35,7 @@ app.get("/directory/?*", async (req, res) => {
 
 //CREATE
 app.post("/directory/*", async (req, res) => {
+  const dirname = path.join("/", req.params[0]);
   try {
     await mkdir(`${import.meta.dirname}/storage/${dirname || ""}`);
     res.json({ message: "Directory Created Successfully" });
@@ -46,7 +47,7 @@ app.post("/directory/*", async (req, res) => {
 //CREATE
 app.post("/files/*", (req, res) => {
   const filePath = path.join("/", req.params[0]);
-
+  console.log(filePath);
   const writeableStrem = createWriteStream(`./storage/${filePath}`);
   req.pipe(writeableStrem);
   req.on("end", () => {
@@ -62,7 +63,9 @@ app.get("/files/*", (req, res) => {
     res.set("Content-Disposition", "attachment");
   }
   res.sendFile(`${import.meta.dirname}/storage/${filePath}`, (err) => {
-    res.json({ message: err.message });
+    if (err) {
+      res.json({ message: "file not found" });
+    }
   });
 });
 
