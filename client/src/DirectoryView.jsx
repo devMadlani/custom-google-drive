@@ -6,8 +6,9 @@ function DirectoryView() {
   const [directories, setDirectories] = useState([]);
   const [progress, setProgress] = useState(0);
   const [newFileName, setNewFileName] = useState("");
+  const [newDirName, setNewDirName] = useState("");
   const { "*": dirPath } = useParams();
-  console.log(dirPath);
+
   const fetchDirectories = async () => {
     const response = await fetch(`${baseUrl}/directory/${dirPath}`);
     const data = await response.json();
@@ -30,6 +31,21 @@ function DirectoryView() {
       setProgress(Math.floor(totalProgress));
     });
     xhr.send(file);
+  };
+
+  const handleCreateDirectory = async (e) => {
+    e.preventDefault();
+
+    const url = `${baseUrl}/directory${
+      dirPath ? "/" + dirPath : ""
+    }/${newDirName}`;
+
+    const res = await fetch(url, { method: "POST" });
+
+    const data = await res.text();
+    setNewDirName("");
+    console.log(data);
+    fetchDirectories();
   };
   const handleDelete = async (filename) => {
     const response = await fetch(`${baseUrl}/files/${dirPath}/${filename}`, {
@@ -66,6 +82,14 @@ function DirectoryView() {
         }}
       />
       <p>{progress}%</p>
+      <form onSubmit={handleCreateDirectory}>
+        <input
+          type="text"
+          value={newDirName}
+          onChange={(e) => setNewDirName(e.target.value)}
+        />
+        <button type="submit">Create Directory</button>
+      </form>
       {directories?.map(({ name, isDirectory }, index) => (
         <div key={index}>
           {name}{" "}
