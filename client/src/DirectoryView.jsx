@@ -3,7 +3,8 @@ import "./App.css";
 import { Link, useParams } from "react-router-dom";
 const baseUrl = "http://localhost:4000";
 function DirectoryView() {
-  const [directories, setDirectories] = useState([]);
+  const [directoriesList, setDirectoriesList] = useState([]);
+  const [fileList, setFileList] = useState([]);
   const [progress, setProgress] = useState(0);
   const [newFileName, setNewFileName] = useState("");
   const [newDirName, setNewDirName] = useState("");
@@ -12,7 +13,9 @@ function DirectoryView() {
   const fetchDirectories = async () => {
     const response = await fetch(`${baseUrl}/directory/${dirPath}`);
     const data = await response.json();
-    setDirectories(data);
+
+    setDirectoriesList(data.directories);
+    setFileList(data.files);
   };
   useEffect(() => {
     fetchDirectories();
@@ -21,7 +24,7 @@ function DirectoryView() {
   const uploadFile = async (e) => {
     const file = e.target.files[0];
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${baseUrl}/files/${dirPath}/${file.name}`, true);
+    xhr.open("POST", `${baseUrl}/file/${file.name}`, true);
     xhr.addEventListener("load", () => {
       console.log(xhr.response);
       fetchDirectories();
@@ -47,8 +50,8 @@ function DirectoryView() {
     console.log(data);
     fetchDirectories();
   };
-  const handleDelete = async (filename) => {
-    const response = await fetch(`${baseUrl}/files/${dirPath}/${filename}`, {
+  const handleDelete = async (id) => {
+    const response = await fetch(`${baseUrl}/file/${id}`, {
       method: "DELETE",
     });
     const data = await response.text();
@@ -58,14 +61,13 @@ function DirectoryView() {
   const renameFile = async (oldfilename) => {
     setNewFileName(oldfilename);
   };
-  const saveFileName = async (oldfilename) => {
-    console.log(oldfilename, newFileName);
-    const response = await fetch(`${baseUrl}/files/${dirPath}/${oldfilename}`, {
+  const saveFileName = async (id) => {
+    const response = await fetch(`${baseUrl}/file/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ newFileName: `/${dirPath}/${newFileName}` }),
+      body: JSON.stringify({ newFileName }),
     });
     const data = await response.text();
     console.log(data);
@@ -90,24 +92,15 @@ function DirectoryView() {
         />
         <button type="submit">Create Directory</button>
       </form>
-      {directories?.map(({ name, isDirectory }, index) => (
+      {fileList?.map(({ name, id }, index) => (
         <div key={index}>
-          {name}{" "}
-          {isDirectory ? (
-            <Link to={`./${name}`}>Open</Link>
-          ) : (
-            <a href={`${baseUrl}/files/${dirPath}/${name}?action=open`}>Open</a>
-          )}{" "}
-          {!isDirectory && (
-            <a href={`${baseUrl}/files/${dirPath}/${name}?action=download`}>
-              Download
-            </a>
-          )}
+          {name} <a href={`${baseUrl}/file/${id}`}>Open</a>{" "}
+          <a href={`${baseUrl}/file/${id}?action=download`}>Download</a>
           <button onClick={() => renameFile(name)}>Rename</button>
-          <button onClick={() => saveFileName(name)}>save</button>
+          <button onClick={() => saveFileName(id)}>save</button>
           <button
             onClick={() => {
-              handleDelete(name);
+              handleDelete(id);
             }}
           >
             Delete

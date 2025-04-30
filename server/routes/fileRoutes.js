@@ -33,11 +33,11 @@ router.get("/:id", (req, res) => {
   const {id} = req.params 
   const data = fileData.find((file)=> file.id === id)
   if (req.query.action === "download") {
-    res.set("Content-Disposition", "attachment");
+    res.set("Content-Disposition",` attachment; filename=${data.name}`);
   }
   const fullFileName = `${id}${data.extention}`;
   res.sendFile(`${process.cwd()}/storage/${fullFileName}`, (err) => {
-    if (err) {
+    if (!res.headersSent) {
       res.json({ message: "file not found" });
     }
   });

@@ -2,8 +2,13 @@
   {
     "id": "902994ac-1507-427c-9410-75c3d7675366",
     "name": "root",
-    "parentDir": null,
-    "files": ["67251844-b14c-4830-8c17-386d5de20780"],
+    "parentDirId": null,
+    "files": [
+      "b2d78c8b-ad42-4957-9ddc-f21c5a85e587",
+      "213f82c6-e34c-43a1-a0a6-719840d707d5",
+      "0a93929f-bd8c-4535-a110-4bf39358188f",
+      "6d0d97ae-1d06-405f-a0ae-8341292fbf51"
+    ],
     "directories": []
   }
 ]
