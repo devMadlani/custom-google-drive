@@ -1,12 +1,8 @@
 [
   {
-    "id": "c48c91e5-8079-4c57-8019-42b9d66d813d",
+    "id": "67251844-b14c-4830-8c17-386d5de20780",
     "extention": ".jpg",
-    "name": "gojo.jpg"
-  },
-  {
-    "id": "1e18026d-914f-4fd7-9923-c5f889ef0021",
-    "extention": ".jpg",
-    "name": "saturo.jpg"
+    "name": "gojo1.jpg",
+    "parentDirId": "902994ac-1507-427c-9410-75c3d7675366"
   }
 ]
