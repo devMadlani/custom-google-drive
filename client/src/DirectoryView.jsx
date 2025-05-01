@@ -8,10 +8,10 @@ function DirectoryView() {
   const [progress, setProgress] = useState(0);
   const [newFileName, setNewFileName] = useState("");
   const [newDirName, setNewDirName] = useState("");
-  const { "*": dirPath } = useParams();
+  const { dirId } = useParams();
 
   const fetchDirectories = async () => {
-    const response = await fetch(`${baseUrl}/directory/${dirPath}`);
+    const response = await fetch(`${baseUrl}/directory/${dirId || ""} `);
     const data = await response.json();
 
     setDirectoriesList(data.directories);
@@ -19,12 +19,13 @@ function DirectoryView() {
   };
   useEffect(() => {
     fetchDirectories();
-  }, [location.pathname]);
+  }, [dirId]);
 
   const uploadFile = async (e) => {
     const file = e.target.files[0];
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${baseUrl}/file/${file.name}`, true);
+    xhr.open("POST", `${baseUrl}/file/${dirId || ""}`, true);
+    xhr.setRequestHeader("filename", file.name);
     xhr.addEventListener("load", () => {
       console.log(xhr.response);
       fetchDirectories();
@@ -39,7 +40,7 @@ function DirectoryView() {
   const handleCreateDirectory = async (e) => {
     e.preventDefault();
 
-    const url = `${baseUrl}/directory${dirPath || ""}`;
+    const url = `${baseUrl}/directory/${dirId || ""}`;
 
     const res = await fetch(url, {
       method: "POST",
@@ -98,7 +99,7 @@ function DirectoryView() {
       </form>
       {directoriesList?.map(({ name, id }, index) => (
         <div key={index}>
-          {name} <a href={`${baseUrl}/directory/${id}`}>Open</a>{" "}
+          {name} <Link to={`/directory/${id}`}>Open</Link>{" "}
           <button onClick={() => renameFile(name)}>Rename</button>
           <button onClick={() => saveFileName(id)}>save</button>
           <button

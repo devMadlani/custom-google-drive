@@ -9,24 +9,17 @@ const router = express.Router();
 //Optional Dynamic Route
 router.get("/:id?", async (req, res) => {
   const { id } = req.params;
-  if (!id) {
-    const directoryData = directoriesData[0];
-    const files = directoryData.files.map((fileId) =>
-      filesData.find((file) => file.id === fileId)
-    );
-    const directories = directoryData.directories.map(dirId =>
-      directoriesData.find((dir)=> dir.id ===dirId )
-    )
-    res.json({ ...directoryData, files , directories });
-  } else {
-    const directoryData = directoriesData.find(
-      (folder) => folder.id === req.params.id
-    );
-    const files = directoryData.files.map((fileId) =>
-      filesData.find((file) => file.id === fileId)
-    );
-    res.json({ ...directoryData, files });
-  }
+  let directoryData = id
+    ? directoriesData.find((directory) => directory.id === req.params.id)
+    : directoriesData[0];
+
+  const files = directoryData.files.map((fileId) =>
+    filesData.find((file) => file.id === fileId)
+  );
+  const directories = directoryData.directories
+    .map((dirId) => directoriesData.find((dir) => dir.id === dirId))
+    .map(({ id, name }) => ({ id, name }));
+  res.json({ ...directoryData, files, directories });
 });
 
 //CREATE
@@ -37,7 +30,7 @@ router.post("/:paretnDirId?", async (req, res) => {
   const id = crypto.randomUUID();
   try {
     const parentDirData = directoriesData.find((dir) => dir.id === parentDirId);
-    console.log(parentDirData.directories.push(id))
+    console.log(parentDirData.directories.push(id));
     directoriesData.push({
       id,
       name: newDirName,

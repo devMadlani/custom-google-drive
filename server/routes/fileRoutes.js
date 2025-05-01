@@ -9,9 +9,9 @@ import directoriesData from "../directoriesDB.json" with { type: "json" };
 const router = express.Router();
 
 //CREATE
-router.post("/:filename", (req, res) => {
-  const { filename } = req.params;
-  const parentDirId = req.headers.parentdirid || directoriesData[0].id;
+router.post("/:parentDirId?", (req, res) => {
+  const  parentDirId  = req.params.parentDirId || directoriesData[0].id;
+  const filename = req.headers.filename;
   const extention = path.extname(filename);
   const id = crypto.randomUUID();
   const fullFileName = `${id}${extention}`;
