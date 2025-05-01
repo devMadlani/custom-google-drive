@@ -9,6 +9,13 @@
       "0a93929f-bd8c-4535-a110-4bf39358188f",
       "6d0d97ae-1d06-405f-a0ae-8341292fbf51"
     ],
+    "directories": ["0e0003fb-0631-4356-bf77-0813392b8dfc"]
+  },
+  {
+    "id": "0e0003fb-0631-4356-bf77-0813392b8dfc",
+    "name": "dev",
+    "parentDirId": "902994ac-1507-427c-9410-75c3d7675366",
+    "files": [],
     "directories": []
   }
 ]

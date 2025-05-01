@@ -39,11 +39,15 @@ function DirectoryView() {
   const handleCreateDirectory = async (e) => {
     e.preventDefault();
 
-    const url = `${baseUrl}/directory${
-      dirPath ? "/" + dirPath : ""
-    }/${newDirName}`;
+    const url = `${baseUrl}/directory${dirPath || ""}`;
 
-    const res = await fetch(url, { method: "POST" });
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ newDirName }),
+    });
 
     const data = await res.text();
     setNewDirName("");
@@ -92,6 +96,20 @@ function DirectoryView() {
         />
         <button type="submit">Create Directory</button>
       </form>
+      {directoriesList?.map(({ name, id }, index) => (
+        <div key={index}>
+          {name} <a href={`${baseUrl}/directory/${id}`}>Open</a>{" "}
+          <button onClick={() => renameFile(name)}>Rename</button>
+          <button onClick={() => saveFileName(id)}>save</button>
+          <button
+            onClick={() => {
+              handleDelete(id);
+            }}
+          >
+            Delete
+          </button>
+        </div>
+      ))}
       {fileList?.map(({ name, id }, index) => (
         <div key={index}>
           {name} <a href={`${baseUrl}/file/${id}`}>Open</a>{" "}

@@ -1,5 +1,5 @@
 import express from "express";
-import { mkdir, readdir, stat } from "fs/promises";
+import { mkdir, readdir, stat, writeFile } from "fs/promises";
 import path from "path";
 import directoriesData from "../directoriesDB.json" with { type: "json" };
 import filesData from "../filesDB.json" with { type: "json" };
@@ -14,7 +14,10 @@ router.get("/:id?", async (req, res) => {
     const files = directoryData.files.map((fileId) =>
       filesData.find((file) => file.id === fileId)
     );
-    res.json({...directoryData,files});
+    const directories = directoryData.directories.map(dirId =>
+      directoriesData.find((dir)=> dir.id ===dirId )
+    )
+    res.json({ ...directoryData, files , directories });
   } else {
     const directoryData = directoriesData.find(
       (folder) => folder.id === req.params.id
@@ -22,18 +25,31 @@ router.get("/:id?", async (req, res) => {
     const files = directoryData.files.map((fileId) =>
       filesData.find((file) => file.id === fileId)
     );
-    res.json({...directoryData,files});
+    res.json({ ...directoryData, files });
   }
 });
 
 //CREATE
-router.post("/*", async (req, res) => {
-  const dirname = path.join("/", req.params[0]);
+router.post("/:paretnDirId?", async (req, res) => {
+  const parentDirId = req.params.paretnDirId || directoriesData[0].id;
+
+  const { newDirName } = req.body;
+  const id = crypto.randomUUID();
   try {
-    await mkdir(`./storage/${dirname}`);
+    const parentDirData = directoriesData.find((dir) => dir.id === parentDirId);
+    console.log(parentDirData.directories.push(id))
+    directoriesData.push({
+      id,
+      name: newDirName,
+      parentDirId,
+      files: [],
+      directories: [],
+    });
+    await writeFile("./directoriesDB.json", JSON.stringify(directoriesData));
+
     res.json({ message: "Directory Created Successfully" });
   } catch (error) {
-    res.json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 });
 
