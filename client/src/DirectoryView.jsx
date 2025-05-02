@@ -55,6 +55,13 @@ function DirectoryView() {
     console.log(data);
     fetchDirectories();
   };
+
+  const handleDeleteDirectory = async (id) => {
+    const response = await fetch(`${baseUrl}/directory/${id}`, {
+      method: "DELETE",
+    });
+    fetchDirectories();
+  };
   const handleDelete = async (id) => {
     const response = await fetch(`${baseUrl}/file/${id}`, {
       method: "DELETE",
@@ -116,7 +123,7 @@ function DirectoryView() {
           <button onClick={() => saveDir(id)}>save</button>
           <button
             onClick={() => {
-              handleDelete(id);
+              handleDeleteDirectory(id);
             }}
           >
             Delete

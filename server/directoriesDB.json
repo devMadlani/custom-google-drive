@@ -4,83 +4,15 @@
     "name": "root",
     "parentDirId": null,
     "files": [
-      "b2d78c8b-ad42-4957-9ddc-f21c5a85e587",
-      "213f82c6-e34c-43a1-a0a6-719840d707d5",
-      "0a93929f-bd8c-4535-a110-4bf39358188f",
-      "6d0d97ae-1d06-405f-a0ae-8341292fbf51"
+      "848d27c0-9db1-4ebf-bca8-efde369e5b05",
+      "d9925244-3ee5-4270-97aa-f2b77920df31"
     ],
-    "directories": [
-      "0e0003fb-0631-4356-bf77-0813392b8dfc",
-      "f8ac8509-2e97-4edf-a8c3-d90a0326e606"
-    ]
-  },
-  {
-    "id": "0e0003fb-0631-4356-bf77-0813392b8dfc",
-    "name": "dev",
-    "parentDirId": "902994ac-1507-427c-9410-75c3d7675366",
-    "files": [],
-    "directories": ["f9e66aeb-b64a-4060-b2bd-ba81caa6f915"]
-  },
-  {
-    "id": "f8ac8509-2e97-4edf-a8c3-d90a0326e606",
-    "name": "",
-    "parentDirId": "902994ac-1507-427c-9410-75c3d7675366",
-    "files": [],
     "directories": []
   },
   {
-    "id": "f9e66aeb-b64a-4060-b2bd-ba81caa6f915",
-    "name": "dev",
-    "parentDirId": "0e0003fb-0631-4356-bf77-0813392b8dfc",
-    "files": [],
-    "directories": [
-      "689b7da8-463e-4703-a7b1-5f6f2acd0c44",
-      "27a1add7-c564-49cc-8508-d7a86b703416",
-      "d2a7eca0-3b6c-44fa-bca6-7ddb48cd8e47",
-      "0c07bd25-2e1f-4d75-9a35-91cc31611bd3",
-      "086a89ca-efc9-424d-b8fb-f4d2792195fd",
-      "3f8dda9c-3902-42e1-a773-4a03dabfebfe"
-    ]
-  },
-  {
-    "id": "689b7da8-463e-4703-a7b1-5f6f2acd0c44",
-    "name": "ddddd",
-    "parentDirId": "f9e66aeb-b64a-4060-b2bd-ba81caa6f915",
-    "files": [],
-    "directories": []
-  },
-  {
-    "id": "27a1add7-c564-49cc-8508-d7a86b703416",
-    "name": "dddddddddddddddd",
-    "parentDirId": "f9e66aeb-b64a-4060-b2bd-ba81caa6f915",
-    "files": [],
-    "directories": []
-  },
-  {
-    "id": "d2a7eca0-3b6c-44fa-bca6-7ddb48cd8e47",
-    "name": "dddddddddd",
-    "parentDirId": "f9e66aeb-b64a-4060-b2bd-ba81caa6f915",
-    "files": [],
-    "directories": []
-  },
-  {
-    "id": "0c07bd25-2e1f-4d75-9a35-91cc31611bd3",
-    "name": "ddddddddddd",
-    "parentDirId": "f9e66aeb-b64a-4060-b2bd-ba81caa6f915",
-    "files": [],
-    "directories": []
-  },
-  {
-    "id": "086a89ca-efc9-424d-b8fb-f4d2792195fd",
-    "name": "d",
-    "parentDirId": "f9e66aeb-b64a-4060-b2bd-ba81caa6f915",
-    "files": [],
-    "directories": []
-  },
-  {
-    "id": "3f8dda9c-3902-42e1-a773-4a03dabfebfe",
-    "name": "",
-    "parentDirId": "f9e66aeb-b64a-4060-b2bd-ba81caa6f915",
+    "id": "d1f65383-ec4d-42ea-9c09-db0de09a8dd3",
+    "name": "immportal",
+    "parentDirId": "675b552b-81e6-4f4c-b2c7-fe96c00bbb02",
     "files": [],
     "directories": []
   }
