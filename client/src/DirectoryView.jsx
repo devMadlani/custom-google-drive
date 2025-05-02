@@ -78,6 +78,18 @@ function DirectoryView() {
     console.log(data);
     fetchDirectories();
   };
+  const saveDir = async (id) => {
+    const response = await fetch(`${baseUrl}/directory/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ newDirName: newFileName }),
+    });
+    const data = await response.text();
+    console.log(data);
+    fetchDirectories();
+  };
   return (
     <>
       <input type="file" onChange={uploadFile} />
@@ -101,7 +113,7 @@ function DirectoryView() {
         <div key={index}>
           {name} <Link to={`/directory/${id}`}>Open</Link>{" "}
           <button onClick={() => renameFile(name)}>Rename</button>
-          <button onClick={() => saveFileName(id)}>save</button>
+          <button onClick={() => saveDir(id)}>save</button>
           <button
             onClick={() => {
               handleDelete(id);

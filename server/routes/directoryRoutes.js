@@ -46,4 +46,13 @@ router.post("/:paretnDirId?", async (req, res) => {
   }
 });
 
+//UPDATE
+router.patch("/:id", async (req, res) => {
+  const {id} = req.params 
+  const data = directoriesData.find(dir=> dir.id === id)
+  data.name = req.body.newDirName;
+  await writeFile("./directoryRoutes.js", JSON.stringify(directoriesData))
+  res.json({ message: "Directory Renamed Successfully" });
+
+})
 export default router;
