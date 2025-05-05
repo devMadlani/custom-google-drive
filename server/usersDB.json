@@ -1,0 +1,16 @@
+[
+  {
+    "id": "9f6be0aa-6e60-485a-a576-2c7d4add9d16",
+    "name": "dev",
+    "email": "dev@gmail.com",
+    "password": "12345",
+    "rootDirId": "2b70b643-a8ee-4583-b809-631e429d8de6"
+  },
+  {
+    "id": "1f8e3dce-8700-4620-a154-c6c0726ce429",
+    "name": "krishna",
+    "email": "krishna@gmail.com",
+    "password": "123123",
+    "rootDirId": "b0e6eaf5-c68a-4900-b196-dc3c0d2f8da9"
+  }
+]

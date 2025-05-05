@@ -5,9 +5,9 @@ const Register = () => {
   // State variables for form inputs
   const BASE_URL = "http://localhost:4000";
   const [formData, setFormData] = useState({
-    name: "Anurag Singh",
-    email: "anurag@gmail.com",
-    password: "abcd",
+    name: "",
+    email: "",
+    password: "",
   });
 
   const [isSuccess, setIsSuccess] = useState(false);
