@@ -99,6 +99,19 @@ function DirectoryView() {
   };
   return (
     <>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <h1>My Files</h1>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Link to="/register">Register</Link>
+          <Link to="/login">Login</Link>
+        </div>
+      </div>
       <input type="file" onChange={uploadFile} />
       <input
         type="text"
