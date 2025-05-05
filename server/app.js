@@ -14,6 +14,7 @@ app.use("/user", userRoutes);
 app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ message: "Something went wrong" });
 });
+
 //serving static files
 // app.use((req, res, next) => {
 //   if (req.query.action === "download") {

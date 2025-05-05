@@ -11,13 +11,13 @@ const router = express.Router();
 router.post("/:parentDirId?", (req, res) => {
   const parentDirId = req.params.parentDirId || directoriesData[0].id;
   const filename = req.headers.filename || "untitled";
-  const extention = path.extname(filename);
+  const extension = path.extname(filename);
   const id = crypto.randomUUID();
-  const fullFileName = `${id}${extention}`;
+  const fullFileName = `${id}${extension}`;
   const writeableStrem = createWriteStream(`./storage/${fullFileName}`);
   req.pipe(writeableStrem);
   req.on("end", async () => {
-    fileData.push({ id, extention, name: filename, parentDirId });
+    fileData.push({ id, extension, name: filename, parentDirId });
     const parentDirData = directoriesData.find((dir) => dir.id == parentDirId);
     parentDirData.files.push(id);
     try {
@@ -41,7 +41,7 @@ router.get("/:id", (req, res) => {
   if (req.query.action === "download") {
     res.set("Content-Disposition", ` attachment; filename=${data.name}`);
   }
-  const fullFileName = `${id}${data.extention}`;
+  const fullFileName = `${id}${data.extension}`;
   res.sendFile(`${process.cwd()}/storage/${fullFileName}`, (err) => {
     if (!res.headersSent && err) {
       res.status(404).json({ message: "file not found" });
@@ -58,7 +58,7 @@ router.delete("/:id", async (req, res, error) => {
     return res.status(404).json({ message: "File Not Found" });
   }
   const data = fileData[fileIndex];
-  const fullFileName = `${id}${data.extention}`;
+  const fullFileName = `${id}${data.extension}`;
   try {
     await rm(`./storage/${fullFileName}`, { recursive: true });
     fileData.splice(fileIndex, 1);
@@ -79,7 +79,7 @@ router.delete("/:id", async (req, res, error) => {
 router.patch("/:id", async (req, res, next) => {
   const { id } = req.params;
   const data = fileData.find((file) => file.id === id);
-  data.name = req.body.newFileName;
+  data.name = req.body.newFilename ;
   try {
     await writeFile("./filesDB.json", JSON.stringify(fileData));
     return res.status(200).json({ message: "File Renamed Successfully" });

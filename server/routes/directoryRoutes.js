@@ -7,9 +7,9 @@ const router = express.Router();
 
 //Optional Dynamic Route
 router.get("/:id?", async (req, res) => {
-  const { id } = req.params.id || directoriesData[0].id;
+  const  id  = req.params.id || directoriesData[0].id;
   let directoryData = directoriesData.find(
-    (directory) => directory.id === req.params.id
+    (directory) => directory.id === id
   );
   if (!directoryData) {
     return res.status(404).json({ message: "Directory Not Found" });
@@ -27,7 +27,7 @@ router.get("/:id?", async (req, res) => {
 //CREATE
 router.post("/:paretnDirId?", async (req, res, next) => {
   const parentDirId = req.params.paretnDirId || directoriesData[0].id;
-  const newDirName = req.body.newDirName || "untitled";
+  const dirname = req.headers.dirname || "untitled";
   const id = crypto.randomUUID();
   const parentDirData = directoriesData.find((dir) => dir.id === parentDirId);
   if (!parentDirData) {
@@ -37,7 +37,7 @@ router.post("/:paretnDirId?", async (req, res, next) => {
   parentDirData.directories.push(id);
   directoriesData.push({
     id,
-    name: newDirName,
+    name: dirname,
     parentDirId,
     files: [],
     directories: [],
@@ -78,7 +78,7 @@ router.delete("/:id", async (req, res,next) => {
     for await (const fileId of directoryData.files) {
       const fileIndex = filesData.findIndex((file) => file.id === fileId);
       const fileData = filesData[fileIndex];
-      await rm(`./storage/${fileId}${fileData.extention}`);
+      await rm(`./storage/${fileId}${fileData.extension}`);
       filesData.splice(fileIndex, 1);
     }
     for await (const dirId of directoryData.directories) {

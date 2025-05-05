@@ -2,7 +2,6 @@ import express from "express";
 import { writeFile } from "fs/promises";
 import usersData from "../usersDB.json" with { type: "json" };
 import directoriesData from "../directoriesDB.json" with { type: "json" };
-import { error } from "console";
 const router = express.Router();
 
 router.post("/", async (req, res, next) => {
