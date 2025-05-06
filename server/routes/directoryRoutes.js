@@ -7,6 +7,8 @@ const router = express.Router();
 
 //Optional Dynamic Route
 router.get("/:id?", async (req, res) => {
+
+  console.log(userId)
   const  id  = req.params.id || directoriesData[0].id;
   let directoryData = directoriesData.find(
     (directory) => directory.id === id

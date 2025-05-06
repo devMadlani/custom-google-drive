@@ -2,9 +2,10 @@ import express from "express";
 import { writeFile } from "fs/promises";
 import usersData from "../usersDB.json" with { type: "json" };
 import directoriesData from "../directoriesDB.json" with { type: "json" };
+
 const router = express.Router();
 
-router.post("/", async (req, res, next) => {
+router.post("/register", async (req, res, next) => {
   const { name, email, password } = req.body;
   const foundUser = usersData.find((user) => user.email === email);
   if (foundUser) {
@@ -35,5 +36,18 @@ router.post("/", async (req, res, next) => {
   }
   res.status(201).json({ message: "User Created Successfully" });
 });
+
+router.post("/login", async (req, res,next) => {
+  const { email, password } = req.body;
+  const user = usersData.find((user) => user.email === email);
+  if (!user || user.password !== password) {
+    return res.status(404).json({ error: "Invalid Credentials" });
+  } 
+  res.cookie("userId", user.id,{
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7
+  }); 
+  res.status(200).json({ message: "User Logged In Successfully" });
+})
 
 export default router;
