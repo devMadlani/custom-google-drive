@@ -2,8 +2,16 @@ import express from "express";
 import { writeFile } from "fs/promises";
 import usersData from "../usersDB.json" with { type: "json" };
 import directoriesData from "../directoriesDB.json" with { type: "json" };
+import checkAuth from "../middleware/auth.js";
 
 const router = express.Router();
+
+router.get("/", checkAuth, async (req, res) => {
+  res.status(200).json({
+    name: req.user.name,
+    email: req.user.email,
+  })
+});
 
 router.post("/register", async (req, res, next) => {
   const { name, email, password } = req.body;
@@ -48,6 +56,11 @@ router.post("/login", async (req, res,next) => {
     maxAge: 1000 * 60 * 60 * 24 * 7
   }); 
   res.status(200).json({ message: "User Logged In Successfully" });
+})
+
+router.post("/logout", async (req, res) => {
+  res.clearCookie("userId");
+  res.status(204).end()
 })
 
 export default router;

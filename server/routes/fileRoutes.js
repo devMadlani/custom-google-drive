@@ -61,16 +61,17 @@ router.get("/:id", (req, res) => {
    if (!parentDir) {
     return res.status(404).json({ error: "Parent directory not found!" });
   }
-
+  const fullFileName = `${id}${data.extension}`;
+  const filePath = `${process.cwd()}/storage/${fullFileName}`
   if(parentDir.userId !== req.user.id){
     return res.status(401).json({error:"You don't have access to this file"})
   }
 
   if (req.query.action === "download") {
-    res.set("Content-Disposition", ` attachment; filename=${data.name}`);
+    // res.set("Content-Disposition", ` attachment; filename=${data.name}`);
+    return res.download(filePath,data.name);
   }
-  const fullFileName = `${id}${data.extension}`;
-  res.sendFile(`${process.cwd()}/storage/${fullFileName}`, (err) => {
+  res.sendFile(filePath, (err) => {
     if (!res.headersSent && err) {
       res.status(404).json({ message: "file not found" });
     }

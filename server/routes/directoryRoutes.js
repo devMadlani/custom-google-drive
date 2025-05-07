@@ -34,7 +34,6 @@ router.post("/:paretnDirId?", async (req, res, next) => {
   if (!parentDirData) {
     return res.status(404).json({ message: "Parent Directory Does not exist" });
   }
-  await mkdir(`./storage/${id}`);
   parentDirData.directories.push(id);
   directoriesData.push({
     id,
