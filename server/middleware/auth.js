@@ -7,6 +7,7 @@ function checkAuth(req, res, next) {
   if(!userId || !user){
     return res.status(401).json({message:"Unauthorized"})
   }
+  req.user = user
     next();
 }
 

@@ -9,7 +9,24 @@ const router = express.Router();
 
 //CREATE
 router.post("/:parentDirId?", (req, res) => {
-  const parentDirId = req.params.parentDirId || directoriesData[0].id;
+  const parentDirId = req.params.parentDirId || req.user.rootDirId;
+
+   const parentDirData = directoriesData.find(
+    (directoryData) => directoryData.id === parentDirId
+  );
+
+  // Check if parent directory exists
+  if (!parentDirData) {
+    return res.status(404).json({ error: "Parent directory not found!" });
+  }
+
+  // Check if the directory belongs to the user
+  if (parentDirData.userId !== req.user.id) {
+    return res
+      .status(403)
+      .json({ error: "You do not have permission to upload to this directory." });
+  }
+
   const filename = req.headers.filename || "untitled";
   const extension = path.extname(filename);
   const id = crypto.randomUUID();
@@ -35,9 +52,20 @@ router.post("/:parentDirId?", (req, res) => {
 router.get("/:id", (req, res) => {
   const { id } = req.params;
   const data = fileData.find((file) => file.id === id);
-  if (!data) {
-    return res.status(404).json({ message: "File Not Found" });
+
+   if (!data) {
+    return res.status(404).json({ error: "File not found!" });
   }
+
+  const parentDir = directoriesData.find((dir) => dir.id == data.parentDirId);
+   if (!parentDir) {
+    return res.status(404).json({ error: "Parent directory not found!" });
+  }
+
+  if(parentDir.userId !== req.user.id){
+    return res.status(401).json({error:"You don't have access to this file"})
+  }
+
   if (req.query.action === "download") {
     res.set("Content-Disposition", ` attachment; filename=${data.name}`);
   }
@@ -58,6 +86,15 @@ router.delete("/:id", async (req, res, error) => {
     return res.status(404).json({ message: "File Not Found" });
   }
   const data = fileData[fileIndex];
+
+  const parentDir = directoriesData.find((dir) => dir.id == data.parentDirId);
+if (!parentDir) {
+    return res.status(404).json({ error: "Parent directory not found!" });
+  }
+
+  if(parentDir.userId !== req.user.id){
+    return res.status(401).json({error:"You don't have access to this file"})
+  }
   const fullFileName = `${id}${data.extension}`;
   try {
     await rm(`./storage/${fullFileName}`, { recursive: true });
@@ -65,7 +102,6 @@ router.delete("/:id", async (req, res, error) => {
     const parentDirData = directoriesData.find(
       (dir) => dir.id == data.parentDirId
     );
-    console.log(parentDirData);
     parentDirData.files = parentDirData.files.filter((fileId) => fileId !== id);
     await writeFile("./filesDB.json", JSON.stringify(fileData));
     await writeFile("./directoriesDB.json", JSON.stringify(directoriesData));
@@ -79,6 +115,16 @@ router.delete("/:id", async (req, res, error) => {
 router.patch("/:id", async (req, res, next) => {
   const { id } = req.params;
   const data = fileData.find((file) => file.id === id);
+  if(!data){
+    return res.status(404).json({message:"File Not Found"})
+  }
+   const parentDir = directoriesData.find((dir) => dir.id == data.parentDirId);
+   if (!parentDir) {
+    return res.status(404).json({ error: "Parent directory not found!" });
+  }
+  if(parentDir.userId !== req.user.id){
+    return res.status(401).json({error:"You don't have access to this file"})
+  }
   data.name = req.body.newFilename ;
   try {
     await writeFile("./filesDB.json", JSON.stringify(fileData));
