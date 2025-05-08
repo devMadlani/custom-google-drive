@@ -4,8 +4,12 @@ import { rm, writeFile } from "fs/promises";
 import path from "path";
 import fileData from "../filesDB.json" with { type: "json" };
 import directoriesData from "../directoriesDB.json" with { type: "json" };
+import validateIdMiddleware from "../middleware/validateIdMiddleware.js";
 
 const router = express.Router();
+
+router.param("parentDirid",validateIdMiddleware)
+router.param("id",validateIdMiddleware)
 
 //CREATE
 router.post("/:parentDirId?", (req, res) => {
@@ -46,6 +50,8 @@ router.post("/:parentDirId?", (req, res) => {
     }
   });
 });
+
+
 
 //READ
 // wild card routing
@@ -135,5 +141,7 @@ router.patch("/:id", async (req, res, next) => {
     next(error);
   }
 });
+
+
 
 export default router;

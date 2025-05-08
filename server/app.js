@@ -4,7 +4,7 @@ import directoryRoutes from "./routes/directoryRoutes.js";
 import fileRoutes from "./routes/fileRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import cookieParser from "cookie-parser";
-import checkAuth from "./middleware/auth.js";
+import checkAuth from "./middleware/authMiddleware.js";
 const app = express();
 app.use(cookieParser());
 app.use(express.json());

@@ -2,7 +2,7 @@ import express from "express";
 import { writeFile } from "fs/promises";
 import usersData from "../usersDB.json" with { type: "json" };
 import directoriesData from "../directoriesDB.json" with { type: "json" };
-import checkAuth from "../middleware/auth.js";
+import checkAuth from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

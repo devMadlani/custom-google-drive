@@ -1,9 +1,13 @@
 import express from "express";
-import { mkdir, rm,  writeFile } from "fs/promises";
+import { rm,  writeFile } from "fs/promises";
 import directoriesData from "../directoriesDB.json" with { type: "json" };
 import filesData from "../filesDB.json" with { type: "json" };
-import userData from "../usersDB.json" with { type: "json" };
+import validateIdMiddleware from "../middleware/validateIdMiddleware.js";
 const router = express.Router();
+
+
+router.param("parentDirid",validateIdMiddleware)
+router.param("id",validateIdMiddleware)
 
 //Optional Dynamic Route
 router.get("/:id?", async (req, res) => {
