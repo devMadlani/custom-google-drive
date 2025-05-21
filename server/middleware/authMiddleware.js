@@ -1,14 +1,18 @@
-import usersData from "../usersDB.json" with { type: "json" };
+// import usersData from "../usersDB.json" with { type: "json" };
 
+import { ObjectId } from "mongodb";
 
-function checkAuth(req, res, next) {
-     const {userId} = req.cookies
-  const user = usersData.find((user) => user.id === userId); 
-  if(!userId || !user){
-    return res.status(401).json({message:"Unauthorized"})
+async function checkAuth(req, res, next) {
+  const { userId } = req.cookies;
+  const db = req.db;
+  const user = await db
+    .collection("users")
+    .findOne({ _id: new ObjectId(userId) });
+  if (!userId || !user) {
+    return res.status(401).json({ message: "Unauthorized" });
   }
-  req.user = user
-    next();
+  req.user = user;
+  next();
 }
 
-export default checkAuth
+export default checkAuth;
