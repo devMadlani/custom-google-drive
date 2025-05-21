@@ -11,6 +11,10 @@ router.param("id",validateIdMiddleware)
 
 //Optional Dynamic Route
 router.get("/:id?", async (req, res) => {
+  const db = req.db
+  const collection =  db.collection("users")
+  const data = await  collection.find().toArray()
+  console.log(data)
   const user = req.user
   const  id  = req.params.id || user.rootDirId
  const directoryData = directoriesData.find((directory) => directory.id === id && directory.userId === user.id);
