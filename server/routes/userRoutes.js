@@ -1,7 +1,4 @@
 import express from "express";
-import { writeFile } from "fs/promises";
-// import usersData from "../usersDB.json" with { type: "json" };
-// import directoriesData from "../directoriesDB.json" with { type: "json" };
 import checkAuth from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -16,7 +13,7 @@ router.get("/", checkAuth, async (req, res) => {
 router.post("/register", async (req, res, next) => {
   const { name, email, password } = req.body;
   const db = req.db;
-  const foundUser = undefined;
+  const foundUser = await db.collection("users").findOne({ email });
   if (foundUser) {
     return res.status(409).json({
       error: "User Already Exists",
@@ -43,12 +40,12 @@ router.post("/register", async (req, res, next) => {
     });
     const userId = createdUser.insertedId;
     await dirCollection.updateOne({ _id: rootDirId }, { $set: { userId } });
-    await writeFile("./usersDB.json", JSON.stringify(usersData));
-    await writeFile("./directoriesDB.json", JSON.stringify(directoriesData));
+
+    res.status(201).json({ message: "User Created Successfully" });
   } catch (error) {
+    console.log(error);
     next(error);
   }
-  res.status(201).json({ message: "User Created Successfully" });
 });
 
 router.post("/login", async (req, res, next) => {
