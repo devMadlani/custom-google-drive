@@ -44,8 +44,11 @@ router.post("/register", async (req, res, next) => {
 
     res.status(201).json({ message: "User Created Successfully" });
   } catch (error) {
-    console.log(error);
-    next(error);
+    if (error.code === 121) {
+      res.status(400).json({ error: "Invalid Data" });
+    } else {
+      next(error);
+    }
   }
 });
 
@@ -53,7 +56,6 @@ router.post("/login", async (req, res, next) => {
   const { email, password } = req.body;
   const db = req.db;
   const user = await db.collection("users").findOne({ email, password });
-  console.log();
   if (!user) {
     return res.status(404).json({ error: "Invalid Credentials" });
   }

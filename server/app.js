@@ -28,7 +28,8 @@ try {
   app.use("/user", userRoutes);
 
   app.use((err, req, res, next) => {
-    res.status(err.status || 500).json({ message: "Something went wrong" });
+    console.log(err);
+    res.status(err.status || 500).json({ error: "Something went wrong", err });
   });
 
   //serving static files

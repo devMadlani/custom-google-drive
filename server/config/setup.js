@@ -30,8 +30,8 @@ try {
             bsonType: "objectId",
           },
         },
+        additionalProperties: false,
       },
-      additionalProperties: false,
     },
     validationLevel: "strict",
     validationAction: "error",
@@ -56,8 +56,8 @@ try {
             bsonType: "objectId",
           },
         },
+        additionalProperties: false,
       },
-      additionalProperties: false,
     },
     validationLevel: "strict",
     validationAction: "error",
@@ -67,7 +67,7 @@ try {
     [command]: "files",
     validator: {
       $jsonSchema: {
-        required: ["_id", "name", "extension", "parentDirId", "userId"],
+        required: ["_id", "name", "extension", "parentDir", "userId"],
         properties: {
           _id: {
             bsonType: "objectId",
@@ -78,15 +78,15 @@ try {
           name: {
             bsonType: "string",
           },
-          parentDirId: {
+          parentDir: {
             bsonType: ["objectId", "null"],
           },
           userId: {
             bsonType: "objectId",
           },
         },
+        additionalProperties: false,
       },
-      additionalProperties: false,
     },
     validationLevel: "strict",
     validationAction: "error",

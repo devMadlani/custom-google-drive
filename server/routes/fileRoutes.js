@@ -1,6 +1,6 @@
 import express from "express";
 import { createWriteStream } from "fs";
-import { rm, writeFile } from "fs/promises";
+import { rm } from "fs/promises";
 import path from "path";
 import validateIdMiddleware from "../middleware/validateIdMiddleware.js";
 import { ObjectId } from "mongodb";
@@ -118,7 +118,6 @@ router.patch("/:id", async (req, res, next) => {
     }
   );
   try {
-    await writeFile("./filesDB.json", JSON.stringify(fileData));
     return res.status(200).json({ message: "File Renamed Successfully" });
   } catch (error) {
     error.status = 500;

@@ -121,7 +121,6 @@ router.delete("/:id", async (req, res, next) => {
     return { files, directories };
   }
   const { files, directories } = await getDirectoryContents(dirObjId);
-  console.log(files, directories);
 
   for (const { _id, extension } of files) {
     await rm(`./storage/${_id.toString()}${extension}`);
