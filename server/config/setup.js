@@ -19,7 +19,7 @@ try {
           },
           email: {
             bsonType: "string",
-            pattern: "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/",
+            pattern: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
             description: "Email must be a valid email address",
           },
           password: {

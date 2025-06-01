@@ -1,6 +1,7 @@
 import express from "express";
 import checkAuth from "../middleware/authMiddleware.js";
 import { ObjectId } from "mongodb";
+import { client } from "../config/db.js";
 
 const router = express.Router();
 
@@ -22,28 +23,36 @@ router.post("/register", async (req, res, next) => {
     });
   }
 
+  const session = client.startSession();
   try {
     const rootDirId = new ObjectId();
     const userId = new ObjectId();
     const dirCollection = db.collection("directories");
+    session.startTransaction();
+    await dirCollection.insertOne(
+      {
+        _id: rootDirId,
+        name: `root-${email}`,
+        parentDirId: null,
+        userId,
+      },
+      { session }
+    );
 
-    await dirCollection.insertOne({
-      _id: rootDirId,
-      name: `root-${email}`,
-      parentDirId: null,
-      userId,
-    });
-
-    await db.collection("users").insertOne({
-      _id: userId,
-      name,
-      email,
-      password,
-      rootDirId,
-    });
-
+    await db.collection("users").insertOne(
+      {
+        _id: userId,
+        name,
+        email,
+        password,
+        rootDirId,
+      },
+      { session }
+    );
+    session.commitTransaction();
     res.status(201).json({ message: "User Created Successfully" });
   } catch (error) {
+    session.abortTransaction();
     if (error.code === 121) {
       res.status(400).json({ error: "Invalid Data" });
     } else {
