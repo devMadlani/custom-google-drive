@@ -1,16 +1,14 @@
 // import usersData from "../usersDB.json" with { type: "json" };
 
 import { ObjectId } from "mongodb";
+import User from "../models/userModel.js";
 
 async function checkAuth(req, res, next) {
   const { userId } = req.cookies;
-  const db = req.db;
   if (!userId) {
     return res.status(401).json({ message: "Unauthorized" });
   }
-  const user = await db
-    .collection("users")
-    .findOne({ _id: new ObjectId(userId) });
+  const user = await User.findById(userId);
   if (!user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
