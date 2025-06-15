@@ -26,17 +26,41 @@ export const getDirectoryContents = async (req, res) => {
   });
 };
 
-export const createDirectory = async (req, res) => {
-  const { paretnDirId } = req.params;
-  const { newDirName } = req.body;
+export const createDirectory = async (req, res, next) => {
+  const user = req.user;
   const db = req.db;
   const dirCollection = db.collection("directories");
-  const dirData = await dirCollection.insertOne({
-    name: newDirName,
-    parentDirId: paretnDirId,
-    userId: req.user._id,
-  });
-  return res.status(200).json({ id: dirData.insertedId.toString() });
+
+  const parentDirId = req.params.parentDirid
+    ? new ObjectId(req.params.parentDirid)
+    : user.rootDirId;
+  const dirname = req.headers.dirname || "New Folder";
+  try {
+    const parentDir = await dirCollection.findOne({
+      _id: parentDirId,
+    });
+
+    if (!parentDir)
+      return res
+        .status(404)
+        .json({ message: "Parent Directory Does not exist!" });
+
+    await dirCollection.insertOne({
+      name: dirname,
+      parentDirId,
+      userId: user._id,
+    });
+
+    return res.status(201).json({ message: "Directory Created!" });
+  } catch (err) {
+    if (err.code === 121) {
+      res
+        .status(400)
+        .json({ error: "Invalid input, please enter valid details" });
+    } else {
+      next(err);
+    }
+  }
 };
 
 export const renameDirectory = async (req, res, next) => {

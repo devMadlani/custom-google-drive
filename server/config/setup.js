@@ -7,6 +7,7 @@ try {
     [command]: "users",
     validator: {
       $jsonSchema: {
+        bsonType: "object",
         required: ["_id", "name", "email", "password", "rootDirId"],
         properties: {
           _id: {
@@ -15,16 +16,17 @@ try {
           name: {
             bsonType: "string",
             minLength: 3,
-            description: "Name must be at least 3 characters long",
+            description:
+              "name field should a string with at least three characters",
           },
           email: {
             bsonType: "string",
-            pattern: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
-            description: "Email must be a valid email address",
+            description: "please enter a valid email",
+            pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$",
           },
           password: {
             bsonType: "string",
-            minLength: 3,
+            minLength: 4,
           },
           rootDirId: {
             bsonType: "objectId",
@@ -33,15 +35,16 @@ try {
         additionalProperties: false,
       },
     },
-    validationLevel: "strict",
     validationAction: "error",
+    validationLevel: "strict",
   });
 
   await db.command({
     [command]: "directories",
     validator: {
       $jsonSchema: {
-        required: ["_id", "name", "parentDirId", "userId"],
+        bsonType: "object",
+        required: ["_id", "name", "userId", "parentDirId"],
         properties: {
           _id: {
             bsonType: "objectId",
@@ -49,50 +52,51 @@ try {
           name: {
             bsonType: "string",
           },
-          parentDirId: {
-            bsonType: ["objectId", "null"],
-          },
           userId: {
             bsonType: "objectId",
+          },
+          parentDirId: {
+            bsonType: ["objectId", "null"],
           },
         },
         additionalProperties: false,
       },
     },
-    validationLevel: "strict",
     validationAction: "error",
+    validationLevel: "strict",
   });
 
   await db.command({
     [command]: "files",
     validator: {
       $jsonSchema: {
-        required: ["_id", "name", "extension", "parentDir", "userId"],
+        bsonType: "object",
+        required: ["_id", "name", "extension", "userId", "parentDirId"],
         properties: {
           _id: {
             bsonType: "objectId",
           },
-          extension: {
-            bsonType: "string",
-          },
           name: {
             bsonType: "string",
           },
-          parentDir: {
-            bsonType: ["objectId", "null"],
+          extension: {
+            bsonType: "string",
           },
           userId: {
             bsonType: "objectId",
+          },
+          parentDirId: {
+            bsonType: ["objectId", "null"],
           },
         },
         additionalProperties: false,
       },
     },
-    validationLevel: "strict",
     validationAction: "error",
+    validationLevel: "strict",
   });
-} catch (error) {
-  console.log("Error", error);
+} catch (err) {
+  console.log("Error setting up the database", err);
 } finally {
-  client.close();
+  await client.close();
 }

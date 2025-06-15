@@ -14,7 +14,7 @@ router.param("id", validateIdMiddleware);
 //Optional Dynamic Route
 router.get("/:id?", getDirectoryContents);
 
-router.post("/:paretnDirId?", createDirectory);
+router.post("/:parentDirid?", createDirectory);
 
 router.patch("/:id", renameDirectory);
 
