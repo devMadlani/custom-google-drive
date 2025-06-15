@@ -25,7 +25,7 @@ export const uploadFile = async (req, res) => {
   const fileData = await filesCollection.insertOne({
     extension,
     name: filename,
-    parentDir: parentDirData._id,
+    parentDirId: parentDirData._id,
     userId: req.user._id,
   });
   const fileId = fileData.insertedId.toString();

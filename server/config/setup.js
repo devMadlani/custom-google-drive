@@ -86,7 +86,7 @@ try {
             bsonType: "objectId",
           },
           parentDirId: {
-            bsonType: ["objectId", "null"],
+            bsonType: "objectId",
           },
         },
         additionalProperties: false,

@@ -6,7 +6,7 @@ import userRoutes from "./routes/userRoutes.js";
 import cookieParser from "cookie-parser";
 import checkAuth from "./middleware/authMiddleware.js";
 import { connectDb } from "./config/db.js";
-
+import "./config/mongoose.js";
 try {
   const db = await connectDb();
   const app = express();
