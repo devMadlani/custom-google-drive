@@ -2,53 +2,53 @@ import { createWriteStream } from "fs";
 import path from "path";
 import { ObjectId } from "mongodb";
 import { rm } from "fs/promises";
-
-export const uploadFile = async (req, res) => {
-  const db = req.db;
-  const dirCollection = db.collection("directories");
-  const filesCollection = db.collection("files");
+import Directory from "../models/direcotryModel.js";
+import File from "../models/fileModel.js";
+export const uploadFile = async (req, res, next) => {
   const parentDirId = req.params.parentDirId || req.user.rootDirId;
+  try {
+    const parentDirData = await Directory.findOne({
+      _id: parentDirId,
+      userId: req.user._id,
+    });
 
-  const parentDirData = await dirCollection.findOne({
-    _id: new ObjectId(parentDirId),
-    userId: req.user._id,
-  });
+    // Check if parent directory exists
+    if (!parentDirData) {
+      return res.status(404).json({ error: "Parent directory not found!" });
+    }
 
-  // Check if parent directory exists
-  if (!parentDirData) {
-    return res.status(404).json({ error: "Parent directory not found!" });
+    const filename = req.headers.filename || "untitled";
+    const extension = path.extname(filename);
+
+    const fileData = await File.insertOne({
+      extension,
+      name: filename,
+      parentDirId: parentDirData._id,
+      userId: req.user._id,
+    });
+    const fileId = fileData.id;
+    const fullFileName = `${fileId}${extension}`;
+    const writeableStrem = createWriteStream(`./storage/${fullFileName}`);
+    req.pipe(writeableStrem);
+    req.on("end", async () => {
+      return res.status(201).json({ message: "File Uploaded Successfully" });
+    });
+    req.on("error", async (error) => {
+      await File.deleteOne({ _id: fileData.insertedId });
+      return res.status(404).json({ message: "File Could not upload" });
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
   }
-
-  const filename = req.headers.filename || "untitled";
-  const extension = path.extname(filename);
-
-  const fileData = await filesCollection.insertOne({
-    extension,
-    name: filename,
-    parentDirId: parentDirData._id,
-    userId: req.user._id,
-  });
-  const fileId = fileData.insertedId.toString();
-  const fullFileName = `${fileId}${extension}`;
-  const writeableStrem = createWriteStream(`./storage/${fullFileName}`);
-  req.pipe(writeableStrem);
-  req.on("end", async () => {
-    return res.status(201).json({ message: "File Uploaded Successfully" });
-  });
-  req.on("error", async (error) => {
-    await filesCollection.deleteOne({ _id: fileData.insertedId });
-    return res.status(404).json({ message: "File Could not upload" });
-  });
 };
 
 export const getFile = async (req, res) => {
   const { id } = req.params;
-  const db = req.db;
-  const filesCollection = db.collection("files");
-  const data = await filesCollection.findOne({
-    _id: new ObjectId(id),
+  const data = await File.findOne({
+    _id: id,
     userId: req.user._id,
-  });
+  }).lean();
 
   if (!data) {
     return res.status(404).json({ error: "File not found!" });
@@ -68,16 +68,19 @@ export const getFile = async (req, res) => {
 
 export const deleteFile = async (req, res, next) => {
   const { id } = req.params;
-  const db = req.db;
-  const filesCollection = db.collection("files");
-  const fileData = await filesCollection.findOne({ _id: new ObjectId(id) });
-  if (!fileData) {
+  const file = await File.findById({
+    _id: id,
+    userId: req.user._id,
+  }).select("extension");
+
+  if (!file) {
     return res.status(404).json({ message: "File Not Found" });
   }
-  const fullFileName = `${id}${fileData.extension}`;
+
   try {
+    const fullFileName = `${id}${file.extension}`;
     await rm(`./storage/${fullFileName}`);
-    await filesCollection.deleteOne({ _id: fileData._id });
+    await file.deleteOne();
     return res.status(200).json({ message: "File Deleted Successfully" });
   } catch (error) {
     console.log(error);
@@ -87,24 +90,16 @@ export const deleteFile = async (req, res, next) => {
 
 export const renameFile = async (req, res, next) => {
   const { id } = req.params;
-  const db = req.db;
-  const filesCollection = db.collection("files");
-  const fileData = await filesCollection.findOne({
-    _id: new ObjectId(id),
+  const file = await File.findOne({
+    _id: id,
     userId: req.user._id,
   });
-  if (!fileData) {
+  if (!file) {
     return res.status(404).json({ message: "File Not Found" });
   }
-  await filesCollection.updateOne(
-    { _id: new ObjectId(id) },
-    {
-      $set: {
-        name: req.body.newFilename,
-      },
-    }
-  );
   try {
+    file.name = req.body.newFilename;
+    await file.save();
     return res.status(200).json({ message: "File Renamed Successfully" });
   } catch (error) {
     error.status = 500;
