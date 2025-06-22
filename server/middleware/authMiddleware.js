@@ -8,7 +8,16 @@ async function checkAuth(req, res, next) {
   if (!userId) {
     return res.status(401).json({ message: "Unauthorized" });
   }
-  const user = await User.findById(userId);
+  const { id, expiry: expiryTimeInSec } = JSON.parse(
+    Buffer.from(userId, "base64url").toString()
+  );
+  console.log(id, expiryTimeInSec);
+  const currentTimeInSec = Math.round(Date.now() / 1000);
+  if (currentTimeInSec > expiryTimeInSec) {
+    res.clearCookie("userId");
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  const user = await User.findById(id).lean();
   if (!user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
