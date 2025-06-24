@@ -1,6 +1,9 @@
 import User from "../models/userModel.js";
+import crypto from "node:crypto";
 import Directory from "../models/direcotryModel.js";
 import mongoose, { Types } from "mongoose";
+
+export const myStorageSecret = "madalnidev3112";
 export const getUser = async (req, res) => {
   res.status(200).json({
     name: req.user.name,
@@ -23,7 +26,6 @@ export const register = async (req, res, next) => {
   try {
     const rootDirId = new Types.ObjectId();
     const userId = new Types.ObjectId();
-    const dirCollection = db.collection("directories");
     session.startTransaction();
     await Directory.insertOne(
       {
@@ -63,22 +65,30 @@ export const loginUser = async (req, res, next) => {
   if (!user) {
     return res.status(404).json({ error: "Invalid Credentials" });
   }
-  const cookiePayload = {
+  const cookiePayload = JSON.stringify({
     id: user._id.toString(),
     expiry: Math.round(Date.now() / 1000 + 40),
-  };
-  res.cookie(
-    "userId",
-    Buffer.from(JSON.stringify(cookiePayload)).toString("base64url"),
-    {
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    }
-  );
+  });
+
+  const signature = crypto
+    .createHash("sha256")
+    .update(myStorageSecret)
+    .update(cookiePayload)
+    .update(myStorageSecret)
+    .digest("base64url");
+
+  const signedCookiePayload = `${Buffer.from(cookiePayload).toString(
+    "base64url"
+  )}.${signature}`;
+
+  res.cookie("token", signedCookiePayload, {
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  });
   res.status(200).json({ message: "User Logged In Successfully" });
 };
 
 export const logoutUser = async (req, res) => {
-  res.clearCookie("userId");
+  res.clearCookie("token");
   res.status(204).end();
 };
