@@ -1,9 +1,7 @@
 import User from "../models/userModel.js";
-import crypto from "node:crypto";
 import Directory from "../models/direcotryModel.js";
 import mongoose, { Types } from "mongoose";
 
-export const myStorageSecret = "madalnidev3112";
 export const getUser = async (req, res) => {
   res.status(200).json({
     name: req.user.name,
@@ -70,19 +68,20 @@ export const loginUser = async (req, res, next) => {
     expiry: Math.round(Date.now() / 1000 + 40),
   });
 
-  const signature = crypto
-    .createHash("sha256")
-    .update(myStorageSecret)
-    .update(cookiePayload)
-    .update(myStorageSecret)
-    .digest("base64url");
+  // const signature = crypto
+  //   .createHash("sha256")
+  //   .update(myStorageSecret)
+  //   .update(cookiePayload)
+  //   .update(myStorageSecret)
+  //   .digest("base64url");
 
-  const signedCookiePayload = `${Buffer.from(cookiePayload).toString(
-    "base64url"
-  )}.${signature}`;
+  // const signedCookiePayload = `${Buffer.from(cookiePayload).toString(
+  //   "base64url"
+  // )}.${signature}`;
 
-  res.cookie("token", signedCookiePayload, {
+  res.cookie("token", Buffer.from(cookiePayload).toString("base64url"), {
     httpOnly: true,
+    signed: true,
     maxAge: 1000 * 60 * 60 * 24 * 7,
   });
   res.status(200).json({ message: "User Logged In Successfully" });

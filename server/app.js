@@ -8,6 +8,7 @@ import checkAuth from "./middleware/authMiddleware.js";
 import { connectDb } from "./config/db.js";
 
 await connectDb();
+const myStorageSecret = "madalnidev3112";
 const app = express();
 app.use(
   cors({
@@ -15,7 +16,7 @@ app.use(
     credentials: true,
   })
 );
-app.use(cookieParser());
+app.use(cookieParser(myStorageSecret));
 app.use(express.json());
 app.use("/directory", checkAuth, directoryRoutes);
 app.use("/file", checkAuth, fileRoutes);
