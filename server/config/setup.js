@@ -1,7 +1,11 @@
-import { client, connectDb } from "./db.js";
+import mongoose from "mongoose";
+import { connectDb } from "./db.js";
 
+await connectDb();
+const client = mongoose.connection.getClient();
 try {
-  const db = await connectDb();
+  const db = mongoose.connection.db;
+
   const command = "collMod";
   await db.command({
     [command]: "users",

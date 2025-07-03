@@ -12,10 +12,9 @@ export const getUser = async (req, res) => {
 
 export const register = async (req, res, next) => {
   const { name, email, password } = req.body;
-  const hashPassword = crypto
-    .createHash("sha256")
-    .update(password)
-    .digest("hex");
+
+  const salt = crypto.randomBytes(16);
+  const hashPassword = crypto.pbkdf2Sync(password, salt, 100000, 32, "sha256");
 
   const foundUser = await User.findOne({ email });
   if (foundUser) {
@@ -45,7 +44,9 @@ export const register = async (req, res, next) => {
         _id: userId,
         name,
         email,
-        password: hashPassword,
+        password: `${salt.toString("base64url")}.${hashPassword.toString(
+          "base64url"
+        )}`,
         rootDirId,
       },
       { session }
@@ -65,16 +66,17 @@ export const register = async (req, res, next) => {
 export const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-  const newHashPassword = crypto
-    .createHash("sha256")
-    .update(password)
-    .digest("hex");
+  const [salt, savedHashPassword] = user.password.split(".");
+
+  const enteredHashPassword = crypto
+    .pbkdf2Sync(password, Buffer.from(salt, "base64url"), 100000, 32, "sha256")
+    .toString("base64url");
 
   if (!user) {
-    return res.status(404).json({ error: "Invalid Credentials" });
+    return res.status(401).json({ error: "Invalid Credentials" });
   }
-  if (user.password !== newHashPassword) {
-    return res.status(404).json({ error: "Invalid Credentials" });
+  if (savedHashPassword !== enteredHashPassword) {
+    return res.status(401).json({ error: "Invalid Credentials" });
   }
 
   const cookiePayload = JSON.stringify({
