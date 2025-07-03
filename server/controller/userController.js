@@ -1,6 +1,7 @@
 import User from "../models/userModel.js";
 import Directory from "../models/direcotryModel.js";
 import mongoose, { Types } from "mongoose";
+import crypto from "node:crypto";
 
 export const getUser = async (req, res) => {
   res.status(200).json({
@@ -11,7 +12,11 @@ export const getUser = async (req, res) => {
 
 export const register = async (req, res, next) => {
   const { name, email, password } = req.body;
-  const db = req.db;
+  const hashPassword = crypto
+    .createHash("sha256")
+    .update(password)
+    .digest("hex");
+
   const foundUser = await User.findOne({ email });
   if (foundUser) {
     return res.status(409).json({
@@ -40,7 +45,7 @@ export const register = async (req, res, next) => {
         _id: userId,
         name,
         email,
-        password,
+        password: hashPassword,
         rootDirId,
       },
       { session }
@@ -59,10 +64,19 @@ export const register = async (req, res, next) => {
 
 export const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email, password });
+  const user = await User.findOne({ email });
+  const newHashPassword = crypto
+    .createHash("sha256")
+    .update(password)
+    .digest("hex");
+
   if (!user) {
     return res.status(404).json({ error: "Invalid Credentials" });
   }
+  if (user.password !== newHashPassword) {
+    return res.status(404).json({ error: "Invalid Credentials" });
+  }
+
   const cookiePayload = JSON.stringify({
     id: user._id.toString(),
     expiry: Math.round(Date.now() / 1000 + 40),
