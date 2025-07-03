@@ -2,6 +2,7 @@ import User from "../models/userModel.js";
 import Directory from "../models/direcotryModel.js";
 import mongoose, { Types } from "mongoose";
 import crypto from "node:crypto";
+import bcrypt from "bcrypt";
 
 export const getUser = async (req, res) => {
   res.status(200).json({
@@ -13,8 +14,7 @@ export const getUser = async (req, res) => {
 export const register = async (req, res, next) => {
   const { name, email, password } = req.body;
 
-  const salt = crypto.randomBytes(16);
-  const hashPassword = crypto.pbkdf2Sync(password, salt, 100000, 32, "sha256");
+  const hashPassword = await bcrypt.hash(password, 12);
 
   const foundUser = await User.findOne({ email });
   if (foundUser) {
@@ -44,9 +44,7 @@ export const register = async (req, res, next) => {
         _id: userId,
         name,
         email,
-        password: `${salt.toString("base64url")}.${hashPassword.toString(
-          "base64url"
-        )}`,
+        password: hashPassword,
         rootDirId,
       },
       { session }
@@ -66,16 +64,13 @@ export const register = async (req, res, next) => {
 export const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-  const [salt, savedHashPassword] = user.password.split(".");
-
-  const enteredHashPassword = crypto
-    .pbkdf2Sync(password, Buffer.from(salt, "base64url"), 100000, 32, "sha256")
-    .toString("base64url");
+  const isValidPass = bcrypt.compare(password, user.password);
 
   if (!user) {
     return res.status(401).json({ error: "Invalid Credentials" });
   }
-  if (savedHashPassword !== enteredHashPassword) {
+
+  if (!isValidPass) {
     return res.status(401).json({ error: "Invalid Credentials" });
   }
 
