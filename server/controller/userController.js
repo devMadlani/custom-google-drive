@@ -15,8 +15,6 @@ export const getUser = async (req, res) => {
 export const register = async (req, res, next) => {
   const { name, email, password } = req.body;
 
-  const hashPassword = await bcrypt.hash(password, 12);
-
   const foundUser = await User.findOne({ email });
   if (foundUser) {
     return res.status(409).json({
@@ -45,7 +43,7 @@ export const register = async (req, res, next) => {
         _id: userId,
         name,
         email,
-        password: hashPassword,
+        password,
         rootDirId,
       },
       { session }
@@ -65,28 +63,20 @@ export const register = async (req, res, next) => {
 export const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-  const isValidPass = bcrypt.compare(password, user.password);
 
   if (!user) {
     return res.status(401).json({ error: "Invalid Credentials" });
   }
+  const isValidPass = await user.comparePassword(password);
 
   if (!isValidPass) {
     return res.status(401).json({ error: "Invalid Credentials" });
   }
-
+  const allSession = await Session.find({ userId: user._id });
+  if (allSession.length >= 2) {
+    await Session.deleteOne({ userId: user._id });
+  }
   const session = await Session.create({ userId: user._id });
-
-  // const signature = crypto
-  //   .createHash("sha256")
-  //   .update(myStorageSecret)
-  //   .update(cookiePayload)
-  //   .update(myStorageSecret)
-  //   .digest("base64url");
-
-  // const signedCookiePayload = `${Buffer.from(cookiePayload).toString(
-  //   "base64url"
-  // )}.${signature}`;
 
   res.cookie("sid", session.id, {
     httpOnly: true,
@@ -97,6 +87,14 @@ export const loginUser = async (req, res, next) => {
 };
 
 export const logoutUser = async (req, res) => {
+  const { sid } = req.signedCookies;
+  await Session.findByIdAndDelete(sid);
+  res.clearCookie("sid");
+  res.status(204).end();
+};
+
+export const logoutAll = async (req, res) => {
+  await Session.deleteMany({ userId: req.user._id });
   res.clearCookie("sid");
   res.status(204).end();
 };
