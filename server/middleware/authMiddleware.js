@@ -1,20 +1,18 @@
+import Session from "../models/sessionModel.js";
 import User from "../models/userModel.js";
 
 async function checkAuth(req, res, next) {
-  const { token } = req.signedCookies;
-  if (!token) {
-    res.clearCookie("token");
+  const { sid } = req.signedCookies;
+  if (!sid) {
+    res.clearCookie("sid");
     return res.status(401).json({ message: "Unauthorized" });
   }
-  const { id, expiry: expiryTimeInSec } = JSON.parse(
-    Buffer.from(token, "base64").toString()
-  );
-  const currentTimeInSec = Math.round(Date.now() / 1000);
-  if (currentTimeInSec > expiryTimeInSec) {
-    res.clearCookie("token");
+  const session = await Session.findById(sid);
+  if (!session) {
+    res.clearCookie("sid");
     return res.status(401).json({ message: "Unauthorized" });
   }
-  const user = await User.findById(id).lean();
+  const user = await User.findById(session.userId).lean();
   if (!user) {
     return res.status(401).json({ message: "Unauthorized" });
   }

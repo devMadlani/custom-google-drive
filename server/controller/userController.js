@@ -3,6 +3,7 @@ import Directory from "../models/direcotryModel.js";
 import mongoose, { Types } from "mongoose";
 import crypto from "node:crypto";
 import bcrypt from "bcrypt";
+import Session from "../models/sessionModel.js";
 
 export const getUser = async (req, res) => {
   res.status(200).json({
@@ -74,10 +75,7 @@ export const loginUser = async (req, res, next) => {
     return res.status(401).json({ error: "Invalid Credentials" });
   }
 
-  const cookiePayload = JSON.stringify({
-    id: user._id.toString(),
-    expiry: Math.round(Date.now() / 1000 + 40),
-  });
+  const session = await Session.create({ userId: user._id });
 
   // const signature = crypto
   //   .createHash("sha256")
@@ -90,7 +88,7 @@ export const loginUser = async (req, res, next) => {
   //   "base64url"
   // )}.${signature}`;
 
-  res.cookie("token", Buffer.from(cookiePayload).toString("base64url"), {
+  res.cookie("sid", session.id, {
     httpOnly: true,
     signed: true,
     maxAge: 1000 * 60 * 60 * 24 * 7,
@@ -99,6 +97,6 @@ export const loginUser = async (req, res, next) => {
 };
 
 export const logoutUser = async (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("sid");
   res.status(204).end();
 };
