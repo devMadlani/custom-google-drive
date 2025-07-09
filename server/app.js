@@ -3,10 +3,11 @@ import cors from "cors";
 import directoryRoutes from "./routes/directoryRoutes.js";
 import fileRoutes from "./routes/fileRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import cookieParser from "cookie-parser";
 import checkAuth from "./middleware/authMiddleware.js";
 import { connectDb } from "./config/db.js";
-
+import dotenv from "dotenv";
 await connectDb();
 const myStorageSecret = "madalnidev3112";
 const app = express();
@@ -16,11 +17,14 @@ app.use(
     credentials: true,
   })
 );
+
+dotenv.config();
 app.use(cookieParser(myStorageSecret));
 app.use(express.json());
 app.use("/directory", checkAuth, directoryRoutes);
 app.use("/file", checkAuth, fileRoutes);
 app.use("/user", userRoutes);
+app.use("/auth", authRoutes);
 
 app.use((err, req, res, next) => {
   console.log(err);
