@@ -1,8 +1,6 @@
 import User from "../models/userModel.js";
 import Directory from "../models/direcotryModel.js";
 import mongoose, { Types } from "mongoose";
-import crypto from "node:crypto";
-import bcrypt from "bcrypt";
 import Session from "../models/sessionModel.js";
 import OTP from "../models/otpModel.js";
 

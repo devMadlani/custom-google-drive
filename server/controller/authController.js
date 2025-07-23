@@ -15,3 +15,8 @@ export const verifyOtp = async (req, res) => {
   }
   res.json({ message: "Otp verified" });
 };
+
+export const loginWithGoogle = async (req, res) => {
+  console.log(req.body.credential);
+  res.end();
+};
