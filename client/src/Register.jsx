@@ -266,7 +266,7 @@ const Register = () => {
         <GoogleLogin
           onSuccess={(credentialResponse) => {
             console.log(credentialResponse);
-            loginWithGoogle(credentialResponse.credential);
+            loginWithGoogle(credentialResponse.credential, navigate);
           }}
           shape="pill"
           text="continue_with"

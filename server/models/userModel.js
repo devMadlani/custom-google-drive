@@ -17,8 +17,11 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
       minLength: [4, "Password must be at least 4 characters long"],
+    },
+    picture: {
+      type: String,
+      default: "../assets/no-profile.webp",
     },
     rootDirId: {
       type: Schema.Types.ObjectId,
