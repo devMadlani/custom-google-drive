@@ -20,4 +20,9 @@ async function checkAuth(req, res, next) {
   next();
 }
 
+export const IsNotNormalUser = (req, res, next) => {
+  if (req.user.role !== "User") return next();
+  res.status(403).json({ error: "Not Authorized" });
+};
+
 export default checkAuth;

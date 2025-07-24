@@ -9,7 +9,21 @@ export const getUser = async (req, res) => {
     name: req.user.name,
     email: req.user.email,
     picture: req.user.picture,
+    role: req.user.role,
   });
+};
+export const getAllUser = async (req, res) => {
+  const allUsers = await User.find().lean();
+  const allSession = await Session.find().lean();
+  const allSessionUserId = allSession.map(({ userId }) => userId.toString());
+  const allSessoinSet = new Set(allSessionUserId);
+  const transformedUser = allUsers.map(({ _id, name, email }) => ({
+    id: _id,
+    name,
+    email,
+    isLoggedIn: allSessoinSet.has(_id.toString()),
+  }));
+  res.status(200).json(transformedUser);
 };
 
 export const register = async (req, res, next) => {
@@ -74,7 +88,9 @@ export const loginUser = async (req, res, next) => {
   if (!user) {
     return res.status(401).json({ error: "Invalid Credentials" });
   }
-  const isValidPass = await user.comparePassword(password);
+  if (password) {
+    const isValidPass = await user.comparePassword(password);
+  }
 
   if (!isValidPass) {
     return res.status(401).json({ error: "Invalid Credentials" });
@@ -91,6 +107,16 @@ export const loginUser = async (req, res, next) => {
     maxAge: 1000 * 60 * 60 * 24 * 7,
   });
   res.status(200).json({ message: "User Logged In Successfully" });
+};
+
+export const logouyById = async (req, res, next) => {
+  const { userId } = req.params;
+  try {
+    await Session.deleteMany({ userId });
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const logoutUser = async (req, res) => {

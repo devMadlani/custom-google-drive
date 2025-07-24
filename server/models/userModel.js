@@ -28,6 +28,11 @@ const userSchema = new Schema(
       ref: "Directory",
       required: true,
     },
+    role: {
+      type: String,
+      enum: ["Admin", "Manager", "User"],
+      default: "User",
+    },
   },
   { strict: "throw" }
 );

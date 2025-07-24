@@ -1,5 +1,5 @@
 import express from "express";
-import checkAuth from "../middleware/authMiddleware.js";
+import checkAuth, { IsNotNormalUser } from "../middleware/authMiddleware.js";
 
 import {
   getUser,
@@ -7,18 +7,24 @@ import {
   logoutAll,
   logoutUser,
   register,
+  getAllUser,
+  logouyById,
 } from "../controller/userController.js";
 
 const router = express.Router();
 
-router.get("/", checkAuth, getUser);
+router.get("/user", checkAuth, getUser);
 
-router.post("/register", register);
+router.get("/users", checkAuth, IsNotNormalUser, getAllUser);
 
-router.post("/login", loginUser);
+router.post("/user/register", register);
 
-router.post("/logout", logoutUser);
+router.post("/user/login", loginUser);
 
-router.post("/logout-all", checkAuth, logoutAll);
+router.post("/users/:userId/logout", logouyById);
+
+router.post("/user/logout", logoutUser);
+
+router.post("/user/logout-all", checkAuth, logoutAll);
 
 export default router;
