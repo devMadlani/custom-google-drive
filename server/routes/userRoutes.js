@@ -8,7 +8,7 @@ import {
   logoutUser,
   register,
   getAllUser,
-  logouyById,
+  logoutById,
 } from "../controller/userController.js";
 
 const router = express.Router();
@@ -21,7 +21,7 @@ router.post("/user/register", register);
 
 router.post("/user/login", loginUser);
 
-router.post("/users/:userId/logout", logouyById);
+router.post("/users/:userId/logout", checkAuth, logoutById);
 
 router.post("/user/logout", logoutUser);
 

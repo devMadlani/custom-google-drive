@@ -273,9 +273,8 @@ const Register = () => {
           onError={() => {
             console.log("Login Failed");
           }}
-          // useOneTap
+          useOneTap
         />
-        ;
       </div>
     </div>
   );

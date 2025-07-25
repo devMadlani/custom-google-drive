@@ -5,8 +5,7 @@ import { useNavigate } from "react-router-dom";
 const BASE_URL = "http://localhost:4000";
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
-  const [name, setName] = useState();
-  const [role, setRole] = useState();
+  const [currentUser, setCurrentUser] = useState({});
   const navigate = useNavigate();
 
   async function fetchUsers() {
@@ -36,8 +35,7 @@ export default function UsersPage() {
       if (response.ok) {
         const data = await response.json();
         // Set user info if logged in
-        setName(data.name);
-        setRole(data.role);
+        setCurrentUser(data);
       } else if (response.status === 401) {
         // User not logged in
         navigate("/login");
@@ -49,7 +47,7 @@ export default function UsersPage() {
       console.error("Error fetching user info:", err);
     }
   }
-
+  console.log(users);
   useEffect(() => {
     fetchUsers();
     fetchUser();
@@ -74,7 +72,7 @@ export default function UsersPage() {
     <div className="users-container">
       <h1 className="title">All Users</h1>
       <p>
-        {name} <i>({role})</i>
+        {currentUser.name} <i>({currentUser.role})</i>
       </p>
       <table className="user-table">
         <thead>
@@ -83,7 +81,7 @@ export default function UsersPage() {
             <th>Email</th>
             <th>Status</th>
             <th></th>
-            {role === "Admin" && <th></th>}
+            {currentUser.role === "Admin" && <th></th>}
           </tr>
         </thead>
         <tbody>
@@ -96,16 +94,22 @@ export default function UsersPage() {
                 <button
                   className="logout-button"
                   onClick={() => logoutUser(user.id)}
-                  disabled={!user.isLoggedIn}
+                  disabled={
+                    !user.isLoggedIn ||
+                    (user.role === "Admin" && currentUser.role !== "Admin")
+                  }
                 >
                   Logout
                 </button>
               </td>
-              {role === "Admin" && (
+              {currentUser.role === "Admin" && (
                 <td>
                   <button
-                    className="logout-button delete-button"
+                    className={`logout-button ${
+                      user.email !== currentUser.email && "delete-button"
+                    }`}
                     onClick={() => logoutUser(user.id)}
+                    disabled={user.email === currentUser.email}
                   >
                     Delete
                   </button>

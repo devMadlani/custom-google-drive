@@ -125,7 +125,6 @@ const Login = () => {
           }}
           useOneTap
         />
-        ;
       </div>
     </div>
   );

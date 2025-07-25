@@ -17,9 +17,10 @@ export const getAllUser = async (req, res) => {
   const allSession = await Session.find().lean();
   const allSessionUserId = allSession.map(({ userId }) => userId.toString());
   const allSessoinSet = new Set(allSessionUserId);
-  const transformedUser = allUsers.map(({ _id, name, email }) => ({
+  const transformedUser = allUsers.map(({ _id, name, email, role }) => ({
     id: _id,
     name,
+    role,
     email,
     isLoggedIn: allSessoinSet.has(_id.toString()),
   }));
@@ -90,11 +91,11 @@ export const loginUser = async (req, res, next) => {
   }
   if (password) {
     const isValidPass = await user.comparePassword(password);
+    if (!isValidPass) {
+      return res.status(401).json({ error: "Invalid Credentials" });
+    }
   }
 
-  if (!isValidPass) {
-    return res.status(401).json({ error: "Invalid Credentials" });
-  }
   const allSession = await Session.find({ userId: user._id });
   if (allSession.length >= 2) {
     await Session.deleteOne({ userId: user._id });
@@ -109,9 +110,14 @@ export const loginUser = async (req, res, next) => {
   res.status(200).json({ message: "User Logged In Successfully" });
 };
 
-export const logouyById = async (req, res, next) => {
+export const logoutById = async (req, res, next) => {
+  const currentUser = req.user;
   const { userId } = req.params;
+  const user = await User.findById(userId).select("role").lean();
   try {
+    if (currentUser.role === "Manager" && user.role === "Admin") {
+      return res.status(403).json({ error: "Not Authorized" });
+    }
     await Session.deleteMany({ userId });
     res.status(204).end();
   } catch (error) {

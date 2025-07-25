@@ -1,5 +1,3 @@
-import { useNavigate } from "react-router-dom";
-
 const baseUrl = "http://localhost:4000";
 
 export const loginWithGoogle = async (idToken, navigate) => {
