@@ -67,6 +67,22 @@ export default function UsersPage() {
       console.error("Logout error:", err);
     }
   };
+  const deleteUser = async (userId) => {
+    try {
+      const response = await fetch(`${BASE_URL}/users/${userId}/`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        fetchUsers();
+      } else {
+        console.error("Delete failed");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
+  };
 
   return (
     <div className="users-container">
@@ -108,7 +124,7 @@ export default function UsersPage() {
                     className={`logout-button ${
                       user.email !== currentUser.email && "delete-button"
                     }`}
-                    onClick={() => logoutUser(user.id)}
+                    onClick={() => deleteUser(user.id)}
                     disabled={user.email === currentUser.email}
                   >
                     Delete

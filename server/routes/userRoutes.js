@@ -1,5 +1,8 @@
 import express from "express";
-import checkAuth, { IsNotNormalUser } from "../middleware/authMiddleware.js";
+import checkAuth, {
+  isAdmin,
+  IsNotNormalUser,
+} from "../middleware/authMiddleware.js";
 
 import {
   getUser,
@@ -9,6 +12,7 @@ import {
   register,
   getAllUser,
   logoutById,
+  deleteUser,
 } from "../controller/userController.js";
 
 const router = express.Router();
@@ -27,4 +31,5 @@ router.post("/user/logout", logoutUser);
 
 router.post("/user/logout-all", checkAuth, logoutAll);
 
+router.delete("/users/:userId", checkAuth, isAdmin, deleteUser);
 export default router;

@@ -1,8 +1,10 @@
 import User from "../models/userModel.js";
 import Directory from "../models/direcotryModel.js";
+import File from "../models/fileModel.js";
 import mongoose, { Types } from "mongoose";
 import Session from "../models/sessionModel.js";
 import OTP from "../models/otpModel.js";
+import { rm } from "fs/promises";
 
 export const getUser = async (req, res) => {
   res.status(200).json({
@@ -13,7 +15,7 @@ export const getUser = async (req, res) => {
   });
 };
 export const getAllUser = async (req, res) => {
-  const allUsers = await User.find().lean();
+  const allUsers = await User.find({ isDeleted: false }).lean();
   const allSession = await Session.find().lean();
   const allSessionUserId = allSession.map(({ userId }) => userId.toString());
   const allSessoinSet = new Set(allSessionUserId);
@@ -136,4 +138,23 @@ export const logoutAll = async (req, res) => {
   await Session.deleteMany({ userId: req.user._id });
   res.clearCookie("sid");
   res.status(204).end();
+};
+
+export const deleteUser = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    // const files = await File.find({ userId }).select("_id extension").lean();
+    // console.log(files);
+    // for (const { _id, extension } of files) {
+    //   await rm(`./storage/${_id}${extension}`);
+    // }
+    await Session.deleteMany({ userId });
+    await User.findByIdAndUpdate(userId, { isDeleted: true });
+    // await Directory.deleteMany({ userId });
+    // await File.deleteMany({ userId });
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };

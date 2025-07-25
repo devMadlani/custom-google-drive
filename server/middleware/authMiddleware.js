@@ -25,4 +25,9 @@ export const IsNotNormalUser = (req, res, next) => {
   res.status(403).json({ error: "Not Authorized" });
 };
 
+export const isAdmin = (req, res, next) => {
+  if (req.user.role === "Admin") return next();
+  res.status(403).json({ error: "Not Authorized" });
+};
+
 export default checkAuth;

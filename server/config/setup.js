@@ -41,6 +41,9 @@ try {
           role: {
             enum: ["Admin", "Manager", "User"],
           },
+          isDelete: {
+            bsonType: "bool",
+          },
           __v: {
             bsonType: "int",
           },
