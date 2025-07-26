@@ -142,6 +142,9 @@ export const logoutAll = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   const { userId } = req.params;
+  if (req.user._id.toString() === userId) {
+    return res.status(403).json({ error: "Can't delete yourself" });
+  }
   try {
     // const files = await File.find({ userId }).select("_id extension").lean();
     // console.log(files);
