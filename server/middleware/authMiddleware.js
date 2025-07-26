@@ -1,5 +1,4 @@
-import Session from "../models/sessionModel.js";
-import User from "../models/userModel.js";
+import redisClient from "../config/redis.js";
 
 async function checkAuth(req, res, next) {
   const { sid } = req.signedCookies;
@@ -7,16 +6,17 @@ async function checkAuth(req, res, next) {
     res.clearCookie("sid");
     return res.status(401).json({ message: "Unauthorized" });
   }
-  const session = await Session.findById(sid);
+
+  const session = await redisClient.json.get(`session:${sid}`);
   if (!session) {
     res.clearCookie("sid");
     return res.status(401).json({ message: "Unauthorized" });
   }
-  const user = await User.findById(session.userId).lean();
-  if (!user) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-  req.user = user;
+  // const user = await User.findById(session.userId).lean();
+  // if (!user) {
+  //   return res.status(401).json({ message: "Unauthorized" });
+  // }
+  req.user = { _id: session.userId, rootDirId: session.rootDirId };
   next();
 }
 

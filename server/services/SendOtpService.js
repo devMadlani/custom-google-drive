@@ -1,5 +1,4 @@
 import nodemailer from "nodemailer";
-import { Resend } from "resend";
 import OTP from "../models/otpModel.js";
 
 export async function SendOtpService(email) {
@@ -22,7 +21,7 @@ export async function SendOtpService(email) {
     port: 587,
     auth: {
       user: "madlanidev@gmail.com",
-      pass: "pcet alau trzb zacd",
+      pass: "ulcr mrds nsiz jgyu",
     },
   });
 

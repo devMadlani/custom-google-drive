@@ -5,13 +5,15 @@ import mongoose, { Types } from "mongoose";
 import Session from "../models/sessionModel.js";
 import OTP from "../models/otpModel.js";
 import { rm } from "fs/promises";
+import redisClient from "../config/redis.js";
 
 export const getUser = async (req, res) => {
+  const user = await User.findById(req.user._id).lean();
   res.status(200).json({
-    name: req.user.name,
-    email: req.user.email,
-    picture: req.user.picture,
-    role: req.user.role,
+    name: user.name,
+    email: user.email,
+    picture: user.picture,
+    role: user.role,
   });
 };
 export const getAllUser = async (req, res) => {
@@ -98,13 +100,19 @@ export const loginUser = async (req, res, next) => {
     }
   }
 
-  const allSession = await Session.find({ userId: user._id });
-  if (allSession.length >= 2) {
-    await Session.deleteOne({ userId: user._id });
-  }
-  const session = await Session.create({ userId: user._id });
-
-  res.cookie("sid", session.id, {
+  // const allSession = await Session.find({ userId: user._id });
+  // if (allSession.length >= 2) {
+  //   await Session.deleteOne({ userId: user._id });
+  // }
+  const sessionId = crypto.randomUUID();
+  const redisKey = `session:${sessionId}`;
+  const expiryTime = 60 * 60 * 24 * 7;
+  await redisClient.json.set(redisKey, "$", {
+    userId: user._id,
+    rootDirId: user.rootDirId,
+  });
+  redisClient.expire(redisKey, expiryTime);
+  res.cookie("sid", sessionId, {
     httpOnly: true,
     signed: true,
     maxAge: 1000 * 60 * 60 * 24 * 7,
@@ -129,7 +137,7 @@ export const logoutById = async (req, res, next) => {
 
 export const logoutUser = async (req, res) => {
   const { sid } = req.signedCookies;
-  await Session.findByIdAndDelete(sid);
+  await redisClient.del(`session:${sid}`);
   res.clearCookie("sid");
   res.status(204).end();
 };
