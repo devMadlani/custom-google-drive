@@ -4,7 +4,7 @@ import User from "../models/userModel.js";
 import { verifyIdToken } from "../services/GoogleAuthService.js";
 import { SendOtpService } from "../services/SendOtpService.js";
 import Directory from "../models/direcotryModel.js";
-import Session from "../models/sessionModel.js";
+import redisClient from "../config/redis.js";
 
 export const sendOtp = async (req, res, next) => {
   const { email } = req.body;
@@ -30,18 +30,31 @@ export const loginWithGoogle = async (req, res, next) => {
     if (user.isDeleted) {
       return res.status(403).json({ message: "Your Account has been deleted" });
     }
-    const allSession = await Session.find({ userId: user._id });
-    if (allSession.length >= 2) {
-      await Session.deleteOne({ userId: user._id });
+    const allSession = await redisClient.ft.search(
+      "userIdIdx",
+      `@userId:{${user._id.toString()}}`,
+      {
+        RETURN: [],
+      }
+    );
+
+    if (allSession.total >= 2) {
+      await redisClient.del(allSession.documents[0].id);
     }
 
     if (!user.picture.includes("googleusercontent.com")) {
       user.picture = picture;
       await user.save();
     }
-    const userSession = await Session.create({ userId: user._id });
-
-    res.cookie("sid", userSession.id, {
+    const sessionId = crypto.randomUUID();
+    const redisKey = `session:${sessionId}`;
+    const expiryTime = 60 * 60 * 24 * 7;
+    await redisClient.json.set(redisKey, "$", {
+      userId: user._id,
+      rootDirId: user.rootDirId,
+    });
+    redisClient.expire(redisKey, expiryTime);
+    res.cookie("sid", sessionId, {
       httpOnly: true,
       signed: true,
       maxAge: 1000 * 60 * 60 * 24 * 7,
@@ -74,9 +87,15 @@ export const loginWithGoogle = async (req, res, next) => {
       { session }
     );
 
-    const userSession = await Session.create({ userId });
-
-    res.cookie("sid", userSession.id, {
+    const sessionId = crypto.randomUUID();
+    const redisKey = `session:${sessionId}`;
+    const expiryTime = 60 * 60 * 24 * 7;
+    await redisClient.json.set(redisKey, "$", {
+      userId: user._id,
+      rootDirId: user.rootDirId,
+    });
+    redisClient.expire(redisKey, expiryTime);
+    res.cookie("sid", sessionId, {
       httpOnly: true,
       signed: true,
       maxAge: 1000 * 60 * 60 * 24 * 7,

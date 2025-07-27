@@ -18,7 +18,8 @@ export const getUser = async (req, res) => {
 };
 export const getAllUser = async (req, res) => {
   const allUsers = await User.find({ isDeleted: false }).lean();
-  const allSession = await Session.find().lean();
+  const allSession = await redisClient.json.objKeys("session:*");
+  console.log(allSession);
   const allSessionUserId = allSession.map(({ userId }) => userId.toString());
   const allSessoinSet = new Set(allSessionUserId);
   const transformedUser = allUsers.map(({ _id, name, email, role }) => ({
@@ -99,11 +100,18 @@ export const loginUser = async (req, res, next) => {
       return res.status(401).json({ error: "Invalid Credentials" });
     }
   }
+  const allSession = await redisClient.ft.search(
+    "userIdIdx",
+    `@userId:{${user._id.toString()}}`,
+    {
+      RETURN: [],
+    }
+  );
 
-  // const allSession = await Session.find({ userId: user._id });
-  // if (allSession.length >= 2) {
-  //   await Session.deleteOne({ userId: user._id });
-  // }
+  if (allSession.total >= 2) {
+    await redisClient.del(allSession.documents[0].id);
+  }
+
   const sessionId = crypto.randomUUID();
   const redisKey = `session:${sessionId}`;
   const expiryTime = 60 * 60 * 24 * 7;
@@ -128,7 +136,14 @@ export const logoutById = async (req, res, next) => {
     if (currentUser.role === "Manager" && user.role === "Admin") {
       return res.status(403).json({ error: "Not Authorized" });
     }
-    await Session.deleteMany({ userId });
+    const allSession = await redisClient.ft.search(
+      "userIdIdx",
+      `@userId:{${userId}}`,
+      { RETURN: [] }
+    );
+    if (allSession.total > 0)
+      allSession.documents.map(async ({ id }) => await redisClient.del(id));
+
     res.status(204).end();
   } catch (error) {
     next(error);
@@ -143,7 +158,13 @@ export const logoutUser = async (req, res) => {
 };
 
 export const logoutAll = async (req, res) => {
-  await Session.deleteMany({ userId: req.user._id });
+  const allSession = await redisClient.ft.search(
+    "userIdIdx",
+    `@userId:{${req.user._id}}`,
+    { RETURN: [] }
+  );
+  if (allSession.total > 0)
+    allSession.documents.map(async ({ id }) => await redisClient.del(id));
   res.clearCookie("sid");
   res.status(204).end();
 };
@@ -153,13 +174,21 @@ export const deleteUser = async (req, res) => {
   if (req.user._id.toString() === userId) {
     return res.status(403).json({ error: "Can't delete yourself" });
   }
+  console.log(userId);
+  const allSession = await redisClient.ft.search(
+    "userIdIdx",
+    `@userId:{${userId}}`,
+    { RETURN: [] }
+  );
+
   try {
     // const files = await File.find({ userId }).select("_id extension").lean();
     // console.log(files);
     // for (const { _id, extension } of files) {
     //   await rm(`./storage/${_id}${extension}`);
     // }
-    await Session.deleteMany({ userId });
+    if (allSession.total > 0)
+      allSession.documents.map(async ({ id }) => await redisClient.del(id));
     await User.findByIdAndUpdate(userId, { isDeleted: true });
     // await Directory.deleteMany({ userId });
     // await File.deleteMany({ userId });

@@ -1,4 +1,5 @@
 import redisClient from "../config/redis.js";
+import User from "../models/userModel.js";
 
 async function checkAuth(req, res, next) {
   const { sid } = req.signedCookies;
@@ -25,8 +26,9 @@ export const IsNotNormalUser = (req, res, next) => {
   res.status(403).json({ error: "Not Authorized" });
 };
 
-export const isAdmin = (req, res, next) => {
-  if (req.user.role === "Admin") return next();
+export const isAdmin = async (req, res, next) => {
+  const user = await User.findById(req.user._id).lean();
+  if (user.role === "Admin") return next();
   res.status(403).json({ error: "Not Authorized" });
 };
 
