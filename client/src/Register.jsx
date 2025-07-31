@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import "./Auth.css";
 import { GoogleLogin } from "@react-oauth/google";
-import { loginWithGoogle } from "./api/loginWithGoogle";
+import { loginWithGoogle, sendOtp, verifyOtp } from "./api/authApi";
+import { registerUser } from "./api/userApi";
 
 const Register = () => {
   const BASE_URL = "http://localhost:4000";
@@ -12,11 +12,8 @@ const Register = () => {
     email: "devm.dds@gmail.com",
     password: "1234",
   });
-
   const [serverError, setServerError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
-
-  // OTP state
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
@@ -27,7 +24,13 @@ const Register = () => {
 
   const navigate = useNavigate();
 
-  // Handle input changes
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "email") {
@@ -40,21 +43,8 @@ const Register = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Countdown timer for resend
-  useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [countdown]);
-
-  // Send OTP handler
   const handleSendOtp = async () => {
-    const { email } = formData;
-    if (!email) {
-      setOtpError("Please enter your email first.");
-      return;
-    }
-
+    if (!formData.email) return setOtpError("Please enter your email first.");
     try {
       setIsSending(true);
       const res = await fetch(`${BASE_URL}/auth/send-otp`, {
@@ -72,14 +62,12 @@ const Register = () => {
         setOtpError(data.error || "Failed to send OTP.");
       }
     } catch (err) {
-      console.error(err);
-      setOtpError("Something went wrong sending OTP.");
+      setOtpError(err.response?.data?.error || "Failed to send OTP.");
     } finally {
       setIsSending(false);
     }
   };
 
-  // Verify OTP handler
   const handleVerifyOtp = async () => {
     const { email } = formData;
     if (!otp) {
@@ -103,14 +91,12 @@ const Register = () => {
         setOtpError(data.error || "Invalid or expired OTP.");
       }
     } catch (err) {
-      console.error(err);
-      setOtpError("Something went wrong verifying OTP.");
+      setOtpError(err.response?.data?.error || "Invalid or expired OTP.");
     } finally {
       setIsVerifying(false);
     }
   };
 
-  // Final form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError("");
@@ -142,47 +128,39 @@ const Register = () => {
   };
 
   return (
-    <div className="container">
-      <h2 className="heading">Register</h2>
-      <form className="form" onSubmit={handleSubmit}>
-        {/* Name */}
-        <div className="form-group">
-          <label htmlFor="name" className="label">
-            Name
-          </label>
+    <div className="max-w-md mx-auto p-5">
+      <h2 className="text-center text-2xl font-semibold mb-3">Register</h2>
+      <form className="flex flex-col" onSubmit={handleSubmit}>
+        <div className="relative mb-3">
+          <label className="block mb-1 font-bold">Name</label>
           <input
-            className="input"
             type="text"
-            id="name"
             name="name"
+            required
             value={formData.name}
             onChange={handleChange}
-            placeholder="Enter your name"
-            required
+            className="w-full p-2 border border-gray-300 rounded"
           />
         </div>
 
-        {/* Email + Send OTP */}
-        <div className="form-group">
-          <label htmlFor="email" className="label">
-            Email
-          </label>
-          <div className="otp-wrapper">
+        <div className="relative mb-3">
+          <label className="block mb-1 font-bold">Email</label>
+          <div className="relative">
             <input
-              className={`input ${serverError ? "input-error" : ""}`}
               type="email"
-              id="email"
               name="email"
+              required
               value={formData.email}
               onChange={handleChange}
-              placeholder="Enter your email"
-              required
+              className={`w-full p-2 pr-24 border ${
+                serverError ? "border-red-500" : "border-gray-300"
+              } rounded`}
             />
             <button
               type="button"
-              className="otp-button"
               onClick={handleSendOtp}
               disabled={isSending || countdown > 0}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white px-2 py-1 text-xs rounded"
             >
               {isSending
                 ? "Sending..."
@@ -191,33 +169,29 @@ const Register = () => {
                 : "Send OTP"}
             </button>
           </div>
-          {serverError && <span className="error-msg">{serverError}</span>}
+          {serverError && (
+            <span className="absolute text-xs text-red-500 mt-1">
+              {serverError}
+            </span>
+          )}
         </div>
 
-        {/* OTP Input + Verify */}
         {otpSent && (
-          <div className="form-group">
-            <label htmlFor="otp" className="label">
-              Enter OTP
-            </label>
-            <div className="otp-wrapper">
+          <div className="relative mb-3">
+            <label className="block mb-1 font-bold">Enter OTP</label>
+            <div className="relative">
               <input
-                className="input"
                 type="text"
-                id="otp"
-                name="otp"
+                maxLength={4}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                placeholder="4-digit OTP"
-                maxLength={4}
-                required
+                className="w-full p-2 pr-24 border border-gray-300 rounded"
               />
-
               <button
                 type="button"
-                className="otp-button"
                 onClick={handleVerifyOtp}
                 disabled={isVerifying || otpVerified}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white px-2 py-1 text-xs rounded"
               >
                 {isVerifying
                   ? "Verifying..."
@@ -226,53 +200,58 @@ const Register = () => {
                   : "Verify OTP"}
               </button>
             </div>
-            {otpError && <span className="error-msg">{otpError}</span>}
+            {otpError && (
+              <span className="absolute text-xs text-red-500 mt-1">
+                {otpError}
+              </span>
+            )}
           </div>
         )}
 
-        {/* Password */}
-        <div className="form-group">
-          <label htmlFor="password" className="label">
-            Password
-          </label>
+        <div className="relative mb-3">
+          <label className="block mb-1 font-bold">Password</label>
           <input
-            className="input"
             type="password"
-            id="password"
             name="password"
+            required
             value={formData.password}
             onChange={handleChange}
-            placeholder="Enter your password"
-            required
+            className="w-full p-2 border border-gray-300 rounded"
           />
         </div>
 
         <button
           type="submit"
-          className={`submit-button ${isSuccess ? "success" : ""}`}
+          className={`bg-blue-500 text-white py-2 rounded w-full font-medium hover:opacity-90 ${
+            !otpVerified || isSuccess ? "opacity-60 cursor-not-allowed" : ""
+          }`}
           disabled={!otpVerified || isSuccess}
         >
           {isSuccess ? "Registration Successful" : "Register"}
         </button>
       </form>
 
-      <p className="link-text">
-        Already have an account? <Link to="/login">Login</Link>
+      <p className="text-center mt-3">
+        Already have an account?{" "}
+        <Link to="/login" className="text-blue-600 hover:underline">
+          Login
+        </Link>
       </p>
-      <div className="or">
-        <span>Or</span>
+
+      <div className="relative text-center my-3">
+        <div className="absolute inset-x-0 top-1/2 transform -translate-y-1/2 h-[2px] bg-gray-300"></div>
+        <span className="relative bg-white px-2 text-sm text-gray-600">Or</span>
       </div>
-      <div className="google-login">
+
+      <div className="flex justify-center">
         <GoogleLogin
-          onSuccess={(credentialResponse) => {
-            console.log(credentialResponse);
-            loginWithGoogle(credentialResponse.credential, navigate);
+          onSuccess={async (credentialResponse) => {
+            const data = await loginWithGoogle(credentialResponse.credential);
+            if (!data.error) navigate("/");
           }}
-          shape="pill"
+          onError={() => console.log("Login Failed")}
+          theme="filled_blue"
           text="continue_with"
-          onError={() => {
-            console.log("Login Failed");
-          }}
           useOneTap
         />
       </div>

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import "./UsersPage.css";
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL = "http://localhost:4000";
@@ -85,47 +84,58 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="users-container">
-      <h1 className="title">All Users</h1>
+    <div className="max-w-5xl mt-10 mx-4">
+      <h1 className="text-3xl font-bold mb-6">All Users</h1>
       <p>
-        {currentUser.name} <i>({currentUser.role})</i>
+        <b>{userName}</b>: <i>({currentUser.role})</i>
       </p>
-      <table className="user-table">
+
+      <table className="w-full mt-6 border-collapse">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Status</th>
-            <th></th>
-            {currentUser.role === "Admin" && <th></th>}
+            <th className="border p-3 bg-gray-200 text-left">Name</th>
+            <th className="border p-3 bg-gray-200 text-left">Email</th>
+            <th className="border p-3 bg-gray-200 text-left">Status</th>
+            <th className="border p-3 bg-gray-200 text-left"></th>
+            {userRole === "Admin" && (
+              <th className="border p-3 bg-gray-200 text-left"></th>
+            )}
           </tr>
         </thead>
         <tbody>
           {users.map((user) => (
             <tr key={user.id}>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
-              <td>{user.isLoggedIn ? "Logged In" : "Logged Out"}</td>
-              <td>
+              <td className="border p-3">{user.name}</td>
+              <td className="border p-3">{user.email}</td>
+              <td className="border p-3">
+                {user.isLoggedIn ? "Logged In" : "Logged Out"}
+              </td>
+              <td className="border p-3">
                 <button
-                  className="logout-button"
-                  onClick={() => logoutUser(user.id)}
+                  onClick={() => logoutUser(user)}
                   disabled={
                     !user.isLoggedIn ||
                     (user.role === "Admin" && currentUser.role !== "Admin")
                   }
+                  className={`px-3 py-1 text-sm text-white rounded ${
+                    user.isLoggedIn
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : "bg-gray-400 cursor-not-allowed"
+                  }`}
                 >
                   Logout
                 </button>
               </td>
               {currentUser.role === "Admin" && (
-                <td>
+                <td className="border p-3">
                   <button
-                    className={`logout-button ${
-                      user.email !== currentUser.email && "delete-button"
-                    }`}
                     onClick={() => deleteUser(user.id)}
                     disabled={user.email === currentUser.email}
+                    className={`px-3 py-1 text-sm text-white rounded ${
+                      user.email === currentUser.email
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-red-600 hover:bg-red-700"
+                    }`}
                   >
                     Delete
                   </button>
