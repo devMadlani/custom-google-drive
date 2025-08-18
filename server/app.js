@@ -8,18 +8,18 @@ import cookieParser from "cookie-parser";
 import checkAuth from "./middleware/authMiddleware.js";
 import { connectDb } from "./config/db.js";
 import dotenv from "dotenv";
+dotenv.config();
 await connectDb();
-const myStorageSecret = "madalnidev3112";
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
+const port = process.env.PORT || 4000;
 
-dotenv.config();
-app.use(cookieParser(myStorageSecret));
+app.use(cookieParser(process.env.SESSION_SECRET));
 app.use(express.json());
 app.use("/directory", checkAuth, directoryRoutes);
 app.use("/file", checkAuth, fileRoutes);
@@ -39,6 +39,6 @@ app.use((err, req, res, next) => {
 //   express.static("./storage")(req, res, next);
 // });
 
-app.listen(4000, () => {
+app.listen(port, () => {
   console.log("Example app listening on port 4000!");
 });

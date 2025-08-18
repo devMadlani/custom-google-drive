@@ -1,11 +1,10 @@
 import User from "../models/userModel.js";
 import Directory from "../models/direcotryModel.js";
-import File from "../models/fileModel.js";
 import mongoose, { Types } from "mongoose";
-import Session from "../models/sessionModel.js";
 import OTP from "../models/otpModel.js";
-import { rm } from "fs/promises";
 import redisClient from "../config/redis.js";
+import { loginSchema, registerSchema } from "../validators/authSchema.js";
+import z from "zod";
 
 export const getUser = async (req, res) => {
   const user = await User.findById(req.user._id).lean();
@@ -33,7 +32,12 @@ export const getAllUser = async (req, res) => {
 };
 
 export const register = async (req, res, next) => {
-  const { name, email, password, otp } = req.body;
+  const { success, data } = registerSchema.safeParse(req.body);
+  if (!success) {
+    return res.status(400).json({ error: "Invalid Data" });
+  }
+
+  const { name, email, password, otp } = data;
 
   const otpRecord = await OTP.findOne({ email, otp });
   if (!otpRecord) {
@@ -88,7 +92,11 @@ export const register = async (req, res, next) => {
 };
 
 export const loginUser = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { success, data } = loginSchema.safeParse(req.body);
+  if (!success) {
+    return res.status(400).json({ error: "Invalid Credentials" });
+  }
+  const { email, password } = data;
   const user = await User.findOne({ email });
 
   if (!user) {
