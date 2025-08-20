@@ -19,10 +19,9 @@ export const uploadFile = async (req, res, next) => {
     const filename = req.headers.filename || "untitled";
     const filesize = req.headers.filesize;
 
-    if (filesize > 100 * 1024) {
-      return res
-        .status(312)
-        .json({ error: "File should be not greater than 100MB" });
+    if (filesize > 50 * 1024 * 1024) {
+      res.header("connection", "close");
+      return res.destroy();
     }
     const extension = path.extname(filename);
 
