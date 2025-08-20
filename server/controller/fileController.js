@@ -34,9 +34,30 @@ export const uploadFile = async (req, res, next) => {
     });
     const fileId = fileData.id;
     const fullFileName = `${fileId}${extension}`;
-    const writeableStrem = createWriteStream(`./storage/${fullFileName}`);
-    req.pipe(writeableStrem);
+    const filepath = `./storage/${fullFileName}`;
+    const writeableStrem = createWriteStream(filepath);
+    let totalFileSize = 0;
+    let aborted = false;
+    req.on("data", async (chunk) => {
+      if (aborted) return;
+      totalFileSize += chunk.length;
+      if (totalFileSize > filesize) {
+        aborted = true;
+        writeableStrem.close();
+        await rm(filepath);
+        await fileData.deleteOne();
+        return req.destroy();
+      }
+      const canContinue = writeableStrem.write(chunk);
+      if (!canContinue) {
+        req.pause();
+        writeableStrem.on("drain", () => {
+          req.resume();
+        });
+      }
+    });
     req.on("end", async () => {
+      writeableStrem.end();
       return res.status(201).json({ message: "File Uploaded Successfully" });
     });
     req.on("error", async (error) => {
