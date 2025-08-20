@@ -74,6 +74,12 @@ try {
           parentDirId: {
             bsonType: ["objectId", "null"],
           },
+          createdAt: {
+            bsonType: "date",
+          },
+          updatedAt: {
+            bsonType: "date",
+          },
           __v: {
             bsonType: "int",
           },
@@ -98,6 +104,9 @@ try {
           name: {
             bsonType: "string",
           },
+          size: {
+            bsonType: "int",
+          },
           extension: {
             bsonType: "string",
           },
@@ -106,6 +115,12 @@ try {
           },
           parentDirId: {
             bsonType: "objectId",
+          },
+          createdAt: {
+            bsonType: "date",
+          },
+          updatedAt: {
+            bsonType: "date",
           },
           __v: {
             bsonType: "int",
