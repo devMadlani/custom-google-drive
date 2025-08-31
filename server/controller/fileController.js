@@ -1,10 +1,9 @@
 import { createWriteStream } from "fs";
-import { rm } from "fs/promises";
 import path from "path";
 import Directory from "../models/directoryModel.js";
 import File from "../models/fileModel.js";
 import User from "../models/userModel.js";
-import { createUploadSignedUrl } from "../config/s3.js";
+import { createGetSignedUrl, createUploadSignedUrl } from "../config/s3.js";
 
 export async function updateDirectoriesSize(parentId, deltaSize) {
   while (parentId) {
@@ -69,7 +68,7 @@ export const uploadFile = async (req, res, next) => {
         aborted = true;
         writeStream.close();
         await insertedFile.deleteOne();
-        await rm(filePath);
+        // await rm(filePath);
         return req.destroy();
       }
       writeStream.write(chunk);
@@ -85,7 +84,7 @@ export const uploadFile = async (req, res, next) => {
       if (!fileUploadCompleted) {
         try {
           await insertedFile.deleteOne();
-          await rm(filePath);
+          // await rm(filePath);
           console.log("file cleaned");
         } catch (err) {
           console.error("Error cleaning up aborted upload:", err);
@@ -118,15 +117,25 @@ export const getFile = async (req, res) => {
   const filePath = `${process.cwd()}/storage/${id}${fileData.extension}`;
 
   if (req.query.action === "download") {
-    return res.download(filePath, fileData.name);
+    const fileUrl = await createGetSignedUrl({
+      key: `${id}${fileData.extension}`,
+      download: true,
+      filename: fileData.name,
+    });
+    return res.redirect(fileUrl);
   }
-
-  // Send file
-  return res.sendFile(filePath, (err) => {
-    if (!res.headersSent && err) {
-      return res.status(404).json({ error: "File not found!" });
-    }
+  const fileUrl = await createGetSignedUrl({
+    key: `${id}${fileData.extension}`,
+    filename: fileData.name,
   });
+
+  return res.redirect(fileUrl);
+  // Send file
+  // return res.sendFile(filePath, (err) => {
+  //   if (!res.headersSent && err) {
+  //     return res.status(404).json({ error: "File not found!" });
+  //   }
+  // });
 };
 
 export const renameFile = async (req, res, next) => {
@@ -166,7 +175,7 @@ export const deleteFile = async (req, res, next) => {
   try {
     await file.deleteOne();
     await updateDirectoriesSize(file.parentDirId, -file.size);
-    await rm(`./storage/${id}${file.extension}`);
+    // await rm(`./storage/${id}${file.extension}`);
     return res.status(200).json({ message: "File Deleted Successfully" });
   } catch (err) {
     next(err);
@@ -192,6 +201,7 @@ export const uploadInitiate = async (req, res) => {
     const user = await User.findById(req.user._id);
     const rootDir = await Directory.findById(req.user.rootDirId);
 
+    let fileUploadCompleted = false;
     const remainingSpace = user.maxStorageInBytes - rootDir.size;
 
     if (filesize > remainingSpace) {
@@ -212,6 +222,25 @@ export const uploadInitiate = async (req, res) => {
       key: `${insertedFile.id}${extension}`,
       contentType: req.body.contentType,
     });
+
+    req.on("close", async () => {
+      if (!fileUploadCompleted) {
+        try {
+          await insertedFile.deleteOne();
+          // await rm(filePath);
+          console.log("file cleaned");
+        } catch (err) {
+          console.error("Error cleaning up aborted upload:", err);
+        }
+      }
+    });
+
+    req.on("error", async () => {
+      await File.deleteOne({ _id: insertedFile.insertedId });
+      return res.status(404).json({ message: "Could not Upload File" });
+    });
+
+    updateDirectoriesSize(parentDirId, filesize);
     res.json({ uploadSignedUrl, fileId: insertedFile.id });
   } catch (err) {
     console.log(err);

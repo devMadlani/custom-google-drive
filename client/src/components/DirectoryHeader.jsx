@@ -34,6 +34,7 @@ function DirectoryHeader({
     async function loadUser() {
       try {
         const user = await fetchUser();
+        console.log(user);
         setUserName(user.name);
         setUserEmail(user.email);
         setMaxStorageInBytes(user.maxStorageInBytes);
