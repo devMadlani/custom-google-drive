@@ -1,5 +1,7 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
@@ -38,4 +40,22 @@ export const createGetSignedUrl = async ({
   });
 
   return url;
+};
+
+export const getS3FileMetaData = async ({ key }) => {
+  const command = new HeadObjectCommand({
+    Bucket: "md-storage-app",
+    Key: key,
+  });
+
+  return await s3Client.send(command);
+};
+
+export const deleteS3File = async ({ key }) => {
+  const command = new DeleteObjectCommand({
+    Bucket: "md-storage-app",
+    Key: key,
+  });
+
+  return await s3Client.send(command);
 };

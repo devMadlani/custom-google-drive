@@ -13,7 +13,12 @@ import {
   renameDirectory,
 } from "./api/directoryApi";
 
-import { deleteFile, renameFile, uploadInitiate } from "./api/fileApi";
+import {
+  deleteFile,
+  renameFile,
+  uploadComplete,
+  uploadInitiate,
+} from "./api/fileApi";
 import DetailsPopup from "./components/DetailsPopup";
 import ConfirmDeleteModal from "./components/ConfirmDeleteModel";
 
@@ -123,24 +128,29 @@ function DirectoryView() {
       progress: 0,
     };
 
-    const data = await uploadInitiate({
-      name: file.name,
-      size: file.size,
-      contentType: file.type,
-      parentDirId: dirId,
-    });
+    try {
+      const data = await uploadInitiate({
+        name: file.name,
+        size: file.size,
+        contentType: file.type,
+        parentDirId: dirId,
+      });
 
-    const { uploadSignedUrl, fileId } = data;
+      const { uploadSignedUrl, fileId } = data;
 
-    // Optimistically show the file in the list
-    setFilesList((prev) => [tempItem, ...prev]);
-    setUploadItem(tempItem);
-    e.target.value = "";
+      // Optimistically show the file in the list
+      setFilesList((prev) => [tempItem, ...prev]);
+      setUploadItem(tempItem);
+      e.target.value = "";
 
-    startUpload({ item: tempItem, uploadUrl: uploadSignedUrl, fileId });
+      startUpload({ item: tempItem, uploadUrl: uploadSignedUrl, fileId });
+    } catch (error) {
+      setErrorMessage(error.response.data.error);
+      setTimeout(() => setErrorMessage(""), 3000);
+    }
   }
 
-  function startUpload({ item, uploadUrl }) {
+  function startUpload({ item, uploadUrl, fileId }) {
     const xhr = new XMLHttpRequest();
     xhrRef.current = xhr;
 
@@ -153,8 +163,14 @@ function DirectoryView() {
       }
     });
 
-    xhr.onload = () => {
+    xhr.onload = async () => {
       // Clear upload state and refresh directory
+      console.log(xhr.status);
+      if (xhr.status === 200) {
+        const fileUploadRes = await uploadComplete(fileId);
+      } else {
+        setErrorMessage("File Not Uploaded");
+      }
       setUploadItem(null);
       loadDirectory();
     };

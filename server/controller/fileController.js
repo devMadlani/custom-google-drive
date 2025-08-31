@@ -3,7 +3,12 @@ import path from "path";
 import Directory from "../models/directoryModel.js";
 import File from "../models/fileModel.js";
 import User from "../models/userModel.js";
-import { createGetSignedUrl, createUploadSignedUrl } from "../config/s3.js";
+import {
+  createGetSignedUrl,
+  createUploadSignedUrl,
+  deleteS3File,
+  getS3FileMetaData,
+} from "../config/s3.js";
 
 export async function updateDirectoriesSize(parentId, deltaSize) {
   while (parentId) {
@@ -173,6 +178,7 @@ export const deleteFile = async (req, res, next) => {
   }
 
   try {
+    await deleteS3File({ key: `${file.id}${file.extension}` });
     await file.deleteOne();
     await updateDirectoriesSize(file.parentDirId, -file.size);
     // await rm(`./storage/${id}${file.extension}`);
@@ -240,9 +246,34 @@ export const uploadInitiate = async (req, res) => {
       return res.status(404).json({ message: "Could not Upload File" });
     });
 
-    updateDirectoriesSize(parentDirId, filesize);
     res.json({ uploadSignedUrl, fileId: insertedFile.id });
   } catch (err) {
     console.log(err);
+  }
+};
+
+export const uploadComplete = async (req, res) => {
+  const file = await File.findById(req.body.fileId);
+  if (!file) {
+    return res.status(404).json({ error: "File not found!!" });
+  }
+  try {
+    const fileData = await getS3FileMetaData({
+      key: `${file.id}${file.extension}`,
+    });
+    if (fileData.ContentLength !== file.size) {
+      await file.deleteOne();
+      return res.status(400).json({ error: "File is not uploaded" });
+    }
+    file.isUploading = false;
+    await file.save();
+    await updateDirectoriesSize(file.parentDirId, file.size);
+    return res.status(200).json({ message: "File Uploaded successfully" });
+  } catch (error) {
+    console.log(error);
+    await file.deleteOne();
+    return res
+      .status(404)
+      .json({ error: "File could not be uploaded properly!!" });
   }
 };
