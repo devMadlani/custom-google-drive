@@ -1,5 +1,6 @@
 import {
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
@@ -42,7 +43,7 @@ export const createGetSignedUrl = async ({
   return url;
 };
 
-export const getS3FileMetaData = async ({ key }) => {
+export const getS3FileMetaData = async (key) => {
   const command = new HeadObjectCommand({
     Bucket: "md-storage-app",
     Key: key,
@@ -51,10 +52,22 @@ export const getS3FileMetaData = async ({ key }) => {
   return await s3Client.send(command);
 };
 
-export const deleteS3File = async ({ key }) => {
+export const deleteS3File = async (key) => {
   const command = new DeleteObjectCommand({
     Bucket: "md-storage-app",
     Key: key,
+  });
+
+  return await s3Client.send(command);
+};
+
+export const deleteS3Files = async (keys) => {
+  console.log(keys);
+  const command = new DeleteObjectsCommand({
+    Bucket: "md-storage-app",
+    Delete: {
+      Objects: keys,
+    },
   });
 
   return await s3Client.send(command);

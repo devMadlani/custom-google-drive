@@ -9,6 +9,7 @@ import {
   deleteS3File,
   getS3FileMetaData,
 } from "../config/s3.js";
+import { createCloudFrontGetSignedUrl } from "../services/cloudfront.js";
 
 export async function updateDirectoriesSize(parentId, deltaSize) {
   while (parentId) {
@@ -122,14 +123,30 @@ export const getFile = async (req, res) => {
   const filePath = `${process.cwd()}/storage/${id}${fileData.extension}`;
 
   if (req.query.action === "download") {
-    const fileUrl = await createGetSignedUrl({
+    // S3
+    // const fileUrl = await createGetSignedUrl({
+    //   key: `${id}${fileData.extension}`,
+    //   download: true,
+    //   filename: fileData.name,
+    // });
+
+    // CloudFront
+    const fileUrl = createCloudFrontGetSignedUrl({
       key: `${id}${fileData.extension}`,
       download: true,
       filename: fileData.name,
     });
     return res.redirect(fileUrl);
   }
-  const fileUrl = await createGetSignedUrl({
+
+  //S3
+  // const fileUrl = await createGetSignedUrl({
+  //   key: `${id}${fileData.extension}`,
+  //   filename: fileData.name,
+  // });
+
+  // CloudFront
+  const fileUrl = createCloudFrontGetSignedUrl({
     key: `${id}${fileData.extension}`,
     filename: fileData.name,
   });
@@ -178,10 +195,9 @@ export const deleteFile = async (req, res, next) => {
   }
 
   try {
-    await deleteS3File({ key: `${file.id}${file.extension}` });
+    await deleteS3File(`${file.id}${file.extension}`);
     await file.deleteOne();
     await updateDirectoriesSize(file.parentDirId, -file.size);
-    // await rm(`./storage/${id}${file.extension}`);
     return res.status(200).json({ message: "File Deleted Successfully" });
   } catch (err) {
     next(err);
@@ -258,9 +274,7 @@ export const uploadComplete = async (req, res) => {
     return res.status(404).json({ error: "File not found!!" });
   }
   try {
-    const fileData = await getS3FileMetaData({
-      key: `${file.id}${file.extension}`,
-    });
+    const fileData = await getS3FileMetaData(`${file.id}${file.extension}`);
     if (fileData.ContentLength !== file.size) {
       await file.deleteOne();
       return res.status(400).json({ error: "File is not uploaded" });
