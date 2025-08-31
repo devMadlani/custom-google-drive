@@ -1,10 +1,13 @@
 import { model, Schema } from "mongoose";
-import { number } from "zod";
 
 const fileSchema = new Schema(
   {
     name: {
       type: String,
+      required: true,
+    },
+    size: {
+      type: Number,
       required: true,
     },
     extension: {
@@ -15,19 +18,19 @@ const fileSchema = new Schema(
       type: Schema.Types.ObjectId,
       required: true,
     },
-    size: {
-      type: Number,
-      required: true,
+    isUploading: {
+      type: Schema.Types.Boolean,
     },
     parentDirId: {
       type: Schema.Types.ObjectId,
       ref: "Directory",
-      required: true,
     },
   },
-  { strict: "throw", timestamps: true }
+  {
+    strict: "throw",
+    timestamps: true,
+  }
 );
 
 const File = model("File", fileSchema);
-
 export default File;

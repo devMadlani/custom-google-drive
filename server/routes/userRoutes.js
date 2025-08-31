@@ -1,35 +1,39 @@
 import express from "express";
 import checkAuth, {
-  isAdmin,
-  IsNotNormalUser,
+  checkIsAdminUser,
+  checkNotRegularUser,
 } from "../middleware/authMiddleware.js";
-
 import {
-  getUser,
-  loginUser,
-  logoutAll,
-  logoutUser,
-  register,
-  getAllUser,
-  logoutById,
   deleteUser,
+  getAllUsers,
+  getCurrentUser,
+  login,
+  logout,
+  logoutAll,
+  logoutById,
+  register,
 } from "../controller/userController.js";
 
 const router = express.Router();
 
-router.get("/user", checkAuth, getUser);
-
-router.get("/users", checkAuth, IsNotNormalUser, getAllUser);
-
 router.post("/user/register", register);
 
-router.post("/user/login", loginUser);
+router.post("/user/login", login);
 
-router.post("/users/:userId/logout", checkAuth, logoutById);
+router.get("/user", checkAuth, getCurrentUser);
 
-router.post("/user/logout", logoutUser);
+router.post("/user/logout", logout);
+router.post("/user/logout-all", logoutAll);
 
-router.post("/user/logout-all", checkAuth, logoutAll);
+router.get("/users", checkAuth, checkNotRegularUser, getAllUsers);
 
-router.delete("/users/:userId", checkAuth, isAdmin, deleteUser);
+router.post(
+  "/users/:userId/logout",
+  checkAuth,
+  checkNotRegularUser,
+  logoutById
+);
+
+router.delete("/users/:userId", checkAuth, checkIsAdminUser, deleteUser);
+
 export default router;

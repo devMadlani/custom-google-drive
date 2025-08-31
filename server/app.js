@@ -8,8 +8,8 @@ import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import cookieParser from "cookie-parser";
 import checkAuth from "./middleware/authMiddleware.js";
-import { connectDb } from "./config/db.js";
-await connectDb();
+import { connectDB } from "./config/db.js";
+await connectDB();
 const app = express();
 app.use(
   cors({

@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
-import { connectDb } from "./db.js";
+import { connectDB } from "./db.js";
 
-await connectDb();
+await connectDB();
 const client = mongoose.connection.getClient();
+
 try {
   const db = mongoose.connection.db;
-
   const command = "collMod";
+
   await db.command({
     [command]: "users",
     validator: {
@@ -23,6 +24,9 @@ try {
             description:
               "name field should a string with at least three characters",
           },
+          maxStorageInBytes: {
+            bsonType: "long",
+          },
           email: {
             bsonType: "string",
             description: "please enter a valid email",
@@ -32,16 +36,16 @@ try {
             bsonType: "string",
             minLength: 4,
           },
-          picture: {
-            bsonType: "string",
-          },
           rootDirId: {
             bsonType: "objectId",
+          },
+          picture: {
+            bsonType: "string",
           },
           role: {
             enum: ["Admin", "Manager", "User"],
           },
-          isDelete: {
+          deleted: {
             bsonType: "bool",
           },
           __v: {
@@ -67,6 +71,9 @@ try {
           },
           name: {
             bsonType: "string",
+          },
+          size: {
+            bsonType: "int",
           },
           userId: {
             bsonType: "objectId",

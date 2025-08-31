@@ -12,7 +12,9 @@ const sessionSchema = new Schema(
       expires: 3600,
     },
   },
-  { strict: "throw" }
+  {
+    strict: "throw",
+  }
 );
 
 const Session = model("Session", sessionSchema);

@@ -1,20 +1,21 @@
 import express from "express";
 import validateIdMiddleware from "../middleware/validateIdMiddleware.js";
+
 import {
   createDirectory,
   deleteDirectory,
-  getDirectoryContents,
+  getDirectory,
   renameDirectory,
 } from "../controller/directoryController.js";
+
 const router = express.Router();
 
-router.param("parentDirid", validateIdMiddleware);
+router.param("parentDirId", validateIdMiddleware);
 router.param("id", validateIdMiddleware);
 
-//Optional Dynamic Route
-router.get("/:id?", getDirectoryContents);
+router.get("/:id?", getDirectory);
 
-router.post("/:parentDirid?", createDirectory);
+router.post("/:parentDirId?", createDirectory);
 
 router.patch("/:id", renameDirectory);
 

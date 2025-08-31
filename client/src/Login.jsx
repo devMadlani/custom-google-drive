@@ -5,8 +5,6 @@ import { loginWithGoogle } from "./api/authApi";
 import { loginUser } from "./api/userApi";
 
 const Login = () => {
-  const BASE_URL = "http://localhost:4000";
-
   const [formData, setFormData] = useState({
     email: "devm.dds@gmail.com",
     password: "1234",
@@ -23,26 +21,12 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${BASE_URL}/user/login`, {
-        method: "POST",
-        body: JSON.stringify(formData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
-
-      const data = await response.json();
-      if (data.error) {
-        // If there's an error, set the serverError message
-        setServerError(data.error);
-      } else {
-        // On success, navigate to home or any other protected route
-        navigate("/");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      setServerError("Something went wrong. Please try again.");
+      const data = await loginUser(formData);
+      if (data.error) setServerError(data.error);
+      else navigate("/");
+    } catch (err) {
+      console.error("Login error:", err);
+      setServerError(err.response?.data?.error || "Something went wrong.");
     }
   };
 

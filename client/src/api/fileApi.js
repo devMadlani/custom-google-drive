@@ -12,18 +12,7 @@ export const renameFile = async (id, newFilename) => {
   return data;
 };
 
-export const uploadFileWithProgress = async (
-  dirId,
-  file,
-  filename,
-  onUploadProgress
-) => {
-  const { data } = await axiosWithCreds.post(`/file/${dirId || ""}`, file, {
-    headers: {
-      "Content-Type": file.type,
-      filename,
-    },
-    onUploadProgress,
-  });
+export const uploadInitiate = async (fileData) => {
+  const { data } = await axiosWithCreds.post("/file/upload/initiate", fileData);
   return data;
 };

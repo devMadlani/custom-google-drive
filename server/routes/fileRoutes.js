@@ -5,25 +5,22 @@ import {
   getFile,
   renameFile,
   uploadFile,
+  uploadInitiate,
 } from "../controller/fileController.js";
 
 const router = express.Router();
 
-router.param("parentDirid", validateIdMiddleware);
+router.param("parentDirId", validateIdMiddleware);
 router.param("id", validateIdMiddleware);
 
-//CREATE
+router.post("/upload/initiate", uploadInitiate);
+
 router.post("/:parentDirId?", uploadFile);
 
-//READ
-// wild card routing
 router.get("/:id", getFile);
 
-//DELETE
+router.patch("/:id", renameFile);
 
 router.delete("/:id", deleteFile);
-
-//UPDATE
-router.patch("/:id", renameFile);
 
 export default router;
