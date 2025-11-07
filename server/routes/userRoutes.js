@@ -15,7 +15,9 @@ import {
 } from "../controller/userController.js";
 
 const router = express.Router();
-
+router.get("/krishu", (req, res) => {
+  res.send("I love you krishuuuuuuuuu");
+});
 router.post("/user/register", register);
 
 router.post("/user/login", login);
