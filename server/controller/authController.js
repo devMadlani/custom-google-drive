@@ -2,8 +2,8 @@ import mongoose, { Types } from "mongoose";
 import OTP from "../models/otpModel.js";
 import User from "../models/userModel.js";
 import Directory from "../models/directoryModel.js";
-import { verifyIdToken } from "../services/googleAuthService.js";
-import { SendOtpService } from "../services/sendOtpService.js";
+import { verifyIdToken } from "../services/GoogleAuthService.js";
+import { SendOtpService } from "../services/SendOtpService.js";
 import redisClient from "../config/redis.js";
 import { otpSchema } from "../validators/authSchema.js";
 
